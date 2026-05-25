@@ -6,7 +6,10 @@ import json
 from datetime import datetime
 
 app = FastAPI(title="Nexus News API")
-
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+from db.database import init_db
+init_db()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
