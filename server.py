@@ -7,7 +7,10 @@ from datetime import datetime
 
 app = FastAPI(title="Nexus News API")
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(BASE_DIR, 'src'))
+os.environ.setdefault("DB_PATH", os.path.join(BASE_DIR, "data", "news.db"))
+os.makedirs(os.path.join(BASE_DIR, "data"), exist_ok=True)
 from db.database import init_db
 init_db()
 app.add_middleware(
@@ -17,7 +20,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DB_PATH = os.environ.get("DB_PATH", "data/news.db")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH  = os.environ.get("DB_PATH", os.path.join(BASE_DIR, "data", "news.db"))
+DATA_DIR = os.path.dirname(DB_PATH)
+os.makedirs(DATA_DIR, exist_ok=True)
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
