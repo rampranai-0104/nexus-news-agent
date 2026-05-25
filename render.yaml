@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: nexus-news-api
+    env: python
+    buildCommand: pip install -r requirements_server.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: NEWSAPI_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: HUGGINGFACE_TOKEN
+        sync: false
+      - key: DB_PATH
+        value: data/news.db
+      - key: LAST_RUN_PATH
+        value: data/last_run.txt
+
+  - type: cron
+    name: nexus-news-cron
+    env: python
+    schedule: "0 6 * * *"
+    buildCommand: pip install -r requirements_server.txt
+    startCommand: python cron_job.py
+    envVars:
+      - key: API_URL
+        value: https://nexus-news-api.onrender.com

@@ -1,0 +1,9 @@
+.env
+logs/
+data/news.db
+data/last_run.txt
+__pycache__/
+*.pyc
+*.spec
+dist/
+build/
