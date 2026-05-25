@@ -9,3 +9,4 @@ nltk
 numpy
 plyer
 PyQt5
+psycopg2-binary
