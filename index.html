@@ -282,7 +282,7 @@ function setProgress(pct, label){
 
 async function loadNews(){
   try {
-    setProgress(10, "Connecting to server…");
+    setProgress(10, "Waking up server… (first load takes ~60 seconds)"); await fetch(`${SERVER}/`).catch(()=>{}); await new Promise(r => setTimeout(r, 3000)); setProgress(20, "Connecting to server…");
     const status = await fetch(`${SERVER}/status`).then(r=>r.json()).catch(()=>({is_fresh:false}));
     setProgress(30, "Checking for fresh news…");
 
@@ -308,27 +308,35 @@ async function loadNews(){
   }
 }
 
-async function refreshNews(){
-  const btn = document.getElementById("refreshBtn");
-  btn.disabled = true;
-  btn.textContent = "Refreshing…";
-  document.getElementById("feed").innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Fetching fresh news…</p></div>`;
-
+async function loadNews(){
   try {
-    setProgress(10, "Connecting to server…");
-    await fetch(`${SERVER}/fetch`, {method:"POST", signal: AbortSignal.timeout(300000)});
-    setProgress(80, "Downloading articles…");
-    const data = await fetch(`${SERVER}/news`).then(r=>r.json());
+    setProgress(10, "Waking up server… (may take 60 seconds first time)");
+    document.getElementById("feed").innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Connecting to server…</p></div>`;
+    
+    await fetch(`${SERVER}/`).catch(()=>{});
+    await new Promise(r => setTimeout(r, 5000));
+    
+    setProgress(30, "Checking for fresh news…");
+    const status = await fetch(`${SERVER}/status`, {signal: AbortSignal.timeout(30000)}).then(r=>r.json()).catch(()=>({is_fresh:false}));
+
+    if(!status.is_fresh){
+      setProgress(50, "Fetching latest headlines…");
+      await fetch(`${SERVER}/fetch`, {method:"POST", signal: AbortSignal.timeout(300000)}).catch(()=>{});
+    }
+
+    setProgress(85, "Downloading articles…");
+    const data = await fetch(`${SERVER}/news`, {signal: AbortSignal.timeout(30000)}).then(r=>r.json());
     allArticles = data.articles || [];
-    setProgress(100, `Loaded ${allArticles.length} fresh articles`);
+    setProgress(100, `Loaded ${allArticles.length} articles`);
     renderFeed();
   } catch(e) {
+    document.getElementById("feed").innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <p>Server is starting up — please wait 60 seconds and refresh</p>
+      </div>`;
     document.getElementById("progressWrap").style.display = "none";
-    document.getElementById("feed").innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p>Refresh failed. Try again.</p></div>`;
   }
-
-  btn.disabled = false;
-  btn.innerHTML = "↻ &nbsp;Refresh News";
 }
 
 buildNav();
