@@ -13,14 +13,11 @@
   --surface:#f5f5f8;--card:#ffffff;--border:#e0e0e8;
   --text:#1a1c1c;--text-muted:#737686;--text-light:#9090a0;
   --sidebar-w:220px;
-  --sports:#15803d;--tech:#004ac6;--business:#b45309;
-  --national:#7c3aed;--global:#0369a1;--local:#dc2626;--general:#475569;
 }
 body{font-family:'Inter',system-ui,sans-serif;background:var(--surface);color:var(--text);min-height:100vh;display:flex}
 a{text-decoration:none;color:inherit}
 button{cursor:pointer;border:none;background:none;font-family:inherit}
 
-/* Sidebar */
 .sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 12px 20px;z-index:100;overflow-y:auto}
 .brand{padding:0 8px 20px}
 .brand-name{font-size:18px;font-weight:700;color:var(--primary);letter-spacing:-.3px}
@@ -34,7 +31,6 @@ button{cursor:pointer;border:none;background:none;font-family:inherit}
 .refresh-btn:hover{background:var(--primary-dim)}
 .refresh-btn:disabled{background:#c0c0d0;cursor:not-allowed}
 
-/* Main */
 .main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{background:rgba(245,245,248,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
 .page-title{font-size:20px;font-weight:700;color:var(--text)}
@@ -44,13 +40,11 @@ button{cursor:pointer;border:none;background:none;font-family:inherit}
 .search-wrap input:focus{border-color:var(--primary)}
 .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px}
 
-/* Progress */
 .progress-wrap{padding:8px 32px 0;display:none}
 .progress-bar{height:3px;background:#e0e0e8;border-radius:2px;overflow:hidden}
 .progress-fill{height:100%;background:var(--primary);border-radius:2px;transition:width .4s ease;width:0%}
 .progress-label{font-size:11px;color:var(--primary);padding:4px 0 8px;font-weight:500}
 
-/* Feed */
 .feed{padding:24px 32px;flex:1}
 .cat-header{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:12px;margin-top:8px}
 .article-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:12px;transition:border-color .15s}
@@ -71,13 +65,11 @@ button{cursor:pointer;border:none;background:none;font-family:inherit}
 .read-more{font-size:12px;font-weight:600;color:var(--primary);display:flex;align-items:center;gap:3px;transition:gap .15s}
 .read-more:hover{gap:6px}
 
-/* States */
 .loading-state,.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:12px;color:var(--text-muted);text-align:center}
 .spinner{width:32px;height:32px;border:2.5px solid #e0e0e8;border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty-icon{font-size:36px;margin-bottom:4px;opacity:.4}
 
-/* Responsive */
 @media(max-width:768px){
   .sidebar{transform:translateX(-100%)}
   .main{margin-left:0}
@@ -93,9 +85,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit}
     <div class="brand-name">Nexus News</div>
     <div class="brand-tag">Intelligence Briefing</div>
   </div>
-
   <nav id="navList"></nav>
-
   <div class="sidebar-footer">
     <button class="refresh-btn" id="refreshBtn" onclick="refreshNews()">
       ↻ &nbsp;Refresh News
@@ -204,7 +194,6 @@ function buildCard(a){
   const summary = a.summary || a.description || "";
   const sent = getSentiment((a.title||"") + " " + summary);
   const url = a.url || "";
-
   return `
   <div class="article-card">
     <div class="card-meta">
@@ -227,7 +216,6 @@ function buildCard(a){
 
 function renderFeed(){
   let arts = [...allArticles];
-
   if(activecat) arts = arts.filter(a => a.category === activecat);
   if(searchQ)   arts = arts.filter(a =>
     ((a.title||"") + " " + (a.summary||"") + " " + (a.description||"")).toLowerCase().includes(searchQ)
@@ -277,24 +265,48 @@ function setProgress(pct, label){
   wrap.style.display = "block";
   document.getElementById("progressFill").style.width = pct + "%";
   document.getElementById("progressLabel").textContent = label;
-  if(pct >= 100) setTimeout(() => { wrap.style.display = "none"; }, 1500);
+  if(pct >= 100) setTimeout(() => { wrap.style.display = "none"; }, 2000);
 }
 
+// ── Load news on page open ────────────────────────────────────────────────────
 async function loadNews(){
   try {
-    setProgress(10, "Waking up server… (first load takes ~60 seconds)"); await fetch(`${SERVER}/`).catch(()=>{}); await new Promise(r => setTimeout(r, 3000)); setProgress(20, "Connecting to server…");
-    const status = await fetch(`${SERVER}/status`).then(r=>r.json()).catch(()=>({is_fresh:false}));
+    setProgress(10, "Waking up server…");
+    document.getElementById("feed").innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Connecting to server…</p></div>`;
+
+    await fetch(`${SERVER}/`).catch(()=>{});
+    await new Promise(r => setTimeout(r, 3000));
+
     setProgress(30, "Checking for fresh news…");
+    const status = await fetch(`${SERVER}/status`).then(r=>r.json()).catch(()=>({is_fresh:false}));
 
     if(!status.is_fresh){
-      setProgress(40, "Fetching latest headlines…");
-      await fetch(`${SERVER}/fetch`, {method:"POST"}).catch(()=>{});
-      setProgress(80, "AI summarizing articles…");
+      setProgress(50, "Fetching latest headlines… (2-3 min)");
+      fetch(`${SERVER}/fetch`, {method:"POST"}).catch(()=>{});
+
+      // Poll every 15s waiting for articles
+      let attempts = 0;
+      await new Promise((resolve) => {
+        const poll = setInterval(async () => {
+          attempts++;
+          setProgress(Math.min(50 + attempts * 4, 88), `Summarizing articles… (${attempts * 15}s)`);
+          try {
+            const d = await fetch(`${SERVER}/news`).then(r=>r.json());
+            if((d.articles||[]).length > 0){
+              clearInterval(poll);
+              allArticles = d.articles;
+              resolve();
+            }
+          } catch(e){}
+          if(attempts >= 20){ clearInterval(poll); resolve(); }
+        }, 15000);
+      });
+    } else {
+      setProgress(85, "Downloading articles…");
+      const data = await fetch(`${SERVER}/news`).then(r=>r.json());
+      allArticles = data.articles || [];
     }
 
-    setProgress(90, "Downloading articles…");
-    const data = await fetch(`${SERVER}/news`).then(r=>r.json());
-    allArticles = data.articles || [];
     setProgress(100, `Loaded ${allArticles.length} articles`);
     renderFeed();
   } catch(e) {
@@ -302,41 +314,74 @@ async function loadNews(){
       <div class="empty-state">
         <div class="empty-icon">⚠️</div>
         <p>Could not connect to server</p>
-        <p style="font-size:12px;margin-top:8px">Check your connection and try refreshing</p>
+        <p style="font-size:12px;margin-top:8px">Try refreshing the page</p>
       </div>`;
     document.getElementById("progressWrap").style.display = "none";
   }
 }
 
-async function loadNews(){
+// ── Refresh button ────────────────────────────────────────────────────────────
+async function refreshNews(){
+  const btn = document.getElementById("refreshBtn");
+  btn.disabled = true;
+  btn.textContent = "Refreshing…";
+  document.getElementById("feed").innerHTML = `
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Fetching fresh news…<br>
+      <small style="color:var(--text-muted);font-size:12px">This takes 2-3 minutes. Please wait.</small></p>
+    </div>`;
+
+  setProgress(10, "Connecting to server…");
+
   try {
-    setProgress(10, "Waking up server… (may take 60 seconds first time)");
-    document.getElementById("feed").innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Connecting to server…</p></div>`;
-    
     await fetch(`${SERVER}/`).catch(()=>{});
-    await new Promise(r => setTimeout(r, 5000));
-    
-    setProgress(30, "Checking for fresh news…");
-    const status = await fetch(`${SERVER}/status`, {signal: AbortSignal.timeout(30000)}).then(r=>r.json()).catch(()=>({is_fresh:false}));
+    await new Promise(r => setTimeout(r, 2000));
 
-    if(!status.is_fresh){
-      setProgress(50, "Fetching latest headlines…");
-      await fetch(`${SERVER}/fetch`, {method:"POST", signal: AbortSignal.timeout(300000)}).catch(()=>{});
-    }
+    setProgress(20, "Triggering news fetch…");
+    fetch(`${SERVER}/fetch`, {method:"POST"}).catch(()=>{});
 
-    setProgress(85, "Downloading articles…");
-    const data = await fetch(`${SERVER}/news`, {signal: AbortSignal.timeout(30000)}).then(r=>r.json());
-    allArticles = data.articles || [];
-    setProgress(100, `Loaded ${allArticles.length} articles`);
+    // Poll every 15s
+    let attempts = 0;
+    const maxAttempts = 16;
+
+    await new Promise((resolve) => {
+      const poll = setInterval(async () => {
+        attempts++;
+        const pct = Math.min(20 + attempts * 4, 90);
+        setProgress(pct, `Summarizing with AI… (${attempts * 15}s elapsed)`);
+
+        try {
+          const data = await fetch(`${SERVER}/news`).then(r=>r.json());
+          const arts = data.articles || [];
+          if(arts.length > 0){
+            clearInterval(poll);
+            allArticles = arts;
+            resolve();
+          }
+        } catch(e){}
+
+        if(attempts >= maxAttempts){
+          clearInterval(poll);
+          resolve();
+        }
+      }, 15000);
+    });
+
+    setProgress(100, `Loaded ${allArticles.length} fresh articles`);
     renderFeed();
+
   } catch(e) {
     document.getElementById("feed").innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">⚠️</div>
-        <p>Server is starting up — please wait 60 seconds and refresh</p>
+        <p>Refresh failed. Try again.</p>
       </div>`;
     document.getElementById("progressWrap").style.display = "none";
   }
+
+  btn.disabled = false;
+  btn.innerHTML = "↻ &nbsp;Refresh News";
 }
 
 buildNav();
