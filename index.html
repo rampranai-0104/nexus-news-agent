@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Nexus News — Intelligence Briefing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#004ac6;--primary-light:#e8eeff;--primary-dim:#2563eb;
+  --surface:#f5f5f8;--card:#ffffff;--border:#e0e0e8;
+  --text:#1a1c1c;--text-muted:#737686;--text-light:#9090a0;
+  --sidebar-w:220px;
+  --sports:#15803d;--tech:#004ac6;--business:#b45309;
+  --national:#7c3aed;--global:#0369a1;--local:#dc2626;--general:#475569;
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--surface);color:var(--text);min-height:100vh;display:flex}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;border:none;background:none;font-family:inherit}
+
+/* Sidebar */
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 12px 20px;z-index:100;overflow-y:auto}
+.brand{padding:0 8px 20px}
+.brand-name{font-size:18px;font-weight:700;color:var(--primary);letter-spacing:-.3px}
+.brand-tag{font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all .15s;margin-bottom:2px;border:none;width:100%;text-align:left;background:none}
+.nav-item:hover{background:#f0f0f5;color:var(--text)}
+.nav-item.active{background:var(--primary-light);color:var(--primary);font-weight:600}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+.sidebar-footer{margin-top:auto;padding-top:16px}
+.refresh-btn{width:100%;background:var(--primary);color:#fff;padding:11px 16px;border-radius:21px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;border:none;cursor:pointer}
+.refresh-btn:hover{background:var(--primary-dim)}
+.refresh-btn:disabled{background:#c0c0d0;cursor:not-allowed}
+
+/* Main */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:rgba(245,245,248,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.page-title{font-size:20px;font-weight:700;color:var(--text)}
+.page-sub{font-size:12px;color:var(--text-muted);margin-top:2px}
+.search-wrap{position:relative}
+.search-wrap input{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:8px 16px 8px 36px;font-size:13px;width:220px;outline:none;color:var(--text);font-family:inherit;transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--primary)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px}
+
+/* Progress */
+.progress-wrap{padding:8px 32px 0;display:none}
+.progress-bar{height:3px;background:#e0e0e8;border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--primary);border-radius:2px;transition:width .4s ease;width:0%}
+.progress-label{font-size:11px;color:var(--primary);padding:4px 0 8px;font-weight:500}
+
+/* Feed */
+.feed{padding:24px 32px;flex:1}
+.cat-header{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:12px;margin-top:8px}
+.article-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:12px;transition:border-color .15s}
+.article-card:hover{border-color:#c0c0d0}
+.card-meta{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.card-cat{font-size:11px;font-weight:700;letter-spacing:.5px}
+.card-dot{color:#d0d0d8;font-size:10px}
+.card-source{font-size:11px;color:var(--text-muted);font-weight:500}
+.card-title{font-size:15px;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:10px}
+.summary-box{background:#f5f6ff;border-left:3px solid var(--primary);border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:12px}
+.summary-tag{font-size:10px;font-weight:700;color:var(--primary);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px}
+.summary-text{font-size:13px;color:#2a2c3c;font-style:italic;line-height:1.6}
+.card-footer{display:flex;align-items:center;justify-content:space-between}
+.sentiment{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.s-pos{background:#f0fdf4;color:#15803d}
+.s-neg{background:#fef2f2;color:#b91c1c}
+.s-neu{background:#f0f0f5;color:#555770}
+.read-more{font-size:12px;font-weight:600;color:var(--primary);display:flex;align-items:center;gap:3px;transition:gap .15s}
+.read-more:hover{gap:6px}
+
+/* States */
+.loading-state,.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:12px;color:var(--text-muted);text-align:center}
+.spinner{width:32px;height:32px;border:2.5px solid #e0e0e8;border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-icon{font-size:36px;margin-bottom:4px;opacity:.4}
+
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .main{margin-left:0}
+  .feed{padding:16px}
+  .topbar{padding:12px 16px}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-name">Nexus News</div>
+    <div class="brand-tag">Intelligence Briefing</div>
+  </div>
+
+  <nav id="navList"></nav>
+
+  <div class="sidebar-footer">
+    <button class="refresh-btn" id="refreshBtn" onclick="refreshNews()">
+      ↻ &nbsp;Refresh News
+    </button>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="pageTitle">Intelligence Briefing</div>
+      <div class="page-sub" id="pageSub">Loading your briefing…</div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search headlines…" oninput="handleSearch(this.value)"/>
+    </div>
+  </div>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">Loading…</div>
+  </div>
+
+  <div class="feed" id="feed">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading your briefing…</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const SERVER = "https://nexus-news-api-oncr.onrender.com";
+
+const NAV_ITEMS = [
+  {icon:"📰", label:"All News",   cat:""},
+  {icon:"🏏", label:"Sports",     cat:"sports"},
+  {icon:"💻", label:"Technology", cat:"technology"},
+  {icon:"📈", label:"Markets",    cat:"business"},
+  {icon:"🇮🇳", label:"India",     cat:"national"},
+  {icon:"🌍", label:"World",      cat:"global"},
+  {icon:"📍", label:"Local",      cat:"local"},
+];
+
+const CAT_COLORS = {
+  sports:"#15803d",technology:"#004ac6",business:"#b45309",
+  national:"#7c3aed",global:"#0369a1",local:"#dc2626",general:"#475569"
+};
+const CAT_LABELS = {
+  sports:"SPORTS",technology:"TECHNOLOGY",business:"MARKETS",
+  national:"INDIA",global:"WORLD",local:"LOCAL",general:"GENERAL"
+};
+const CAT_ICONS = {
+  sports:"🏏",technology:"💻",business:"📈",
+  national:"🇮🇳",global:"🌍",local:"📍",general:"📰"
+};
+const CAT_ORDER = ["local","national","global","sports","technology","business","general"];
+
+let allArticles = [];
+let activecat = "";
+let searchQ = "";
+
+function buildNav(){
+  const nav = document.getElementById("navList");
+  nav.innerHTML = NAV_ITEMS.map((item,i) => `
+    <button class="nav-item ${i===0?'active':''}" onclick="setcat('${item.cat}')" data-cat="${item.cat}">
+      <span class="nav-icon">${item.icon}</span>
+      ${item.label}
+    </button>
+  `).join("");
+}
+
+function setcat(cat){
+  activecat = cat;
+  document.querySelectorAll(".nav-item").forEach(el => {
+    el.classList.toggle("active", el.dataset.cat === cat);
+  });
+  const titles = {
+    "":"Intelligence Briefing","sports":"🏏 Sports",
+    "technology":"💻 Technology","business":"📈 Markets",
+    "national":"🇮🇳 India","global":"🌍 World","local":"📍 Local"
+  };
+  document.getElementById("pageTitle").textContent = titles[cat] || "Intelligence Briefing";
+  renderFeed();
+}
+
+function handleSearch(val){
+  searchQ = val.toLowerCase();
+  renderFeed();
+}
+
+function getSentiment(text){
+  const t = text.toLowerCase();
+  const pos = ["wins","growth","surge","record","breakthrough","rally","gain","launch","rise","success"];
+  const neg = ["crash","fail","drop","war","conflict","crisis","loss","decline","struggle","strike","kill"];
+  if(pos.some(w=>t.includes(w))) return {cls:"s-pos",label:"↑ Optimistic"};
+  if(neg.some(w=>t.includes(w))) return {cls:"s-neg",label:"↓ Cautious"};
+  return {cls:"s-neu",label:"— Neutral"};
+}
+
+function buildCard(a){
+  const cat = a.category || "general";
+  const color = CAT_COLORS[cat] || "#475569";
+  const label = CAT_LABELS[cat] || cat.toUpperCase();
+  const summary = a.summary || a.description || "";
+  const sent = getSentiment((a.title||"") + " " + summary);
+  const url = a.url || "";
+
+  return `
+  <div class="article-card">
+    <div class="card-meta">
+      <span class="card-cat" style="color:${color}">${label}</span>
+      <span class="card-dot">•</span>
+      <span class="card-source">${a.source || "Unknown"}</span>
+    </div>
+    <div class="card-title">${a.title || "No title"}</div>
+    ${summary ? `
+    <div class="summary-box">
+      <div class="summary-tag">Nexus AI Synthesis</div>
+      <div class="summary-text">${summary}</div>
+    </div>` : ""}
+    <div class="card-footer">
+      <span class="sentiment ${sent.cls}">${sent.label}</span>
+      ${url ? `<a class="read-more" href="${url}" target="_blank" rel="noopener">Read More →</a>` : ""}
+    </div>
+  </div>`;
+}
+
+function renderFeed(){
+  let arts = [...allArticles];
+
+  if(activecat) arts = arts.filter(a => a.category === activecat);
+  if(searchQ)   arts = arts.filter(a =>
+    ((a.title||"") + " " + (a.summary||"") + " " + (a.description||"")).toLowerCase().includes(searchQ)
+  );
+
+  const now = new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  document.getElementById("pageSub").textContent = `${arts.length} articles · ${now}`;
+
+  const feed = document.getElementById("feed");
+
+  if(!arts.length){
+    feed.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>No articles found</p></div>`;
+    return;
+  }
+
+  if(activecat){
+    feed.innerHTML = arts.map(buildCard).join("");
+    return;
+  }
+
+  const groups = {};
+  arts.forEach(a => {
+    const c = a.category || "general";
+    if(!groups[c]) groups[c] = [];
+    groups[c].push(a);
+  });
+
+  const sortedCats = Object.keys(groups).sort((a,b) => {
+    const ia = CAT_ORDER.indexOf(a), ib = CAT_ORDER.indexOf(b);
+    return (ia===-1?99:ia) - (ib===-1?99:ib);
+  });
+
+  let html = "";
+  sortedCats.forEach(cat => {
+    const color = CAT_COLORS[cat] || "#475569";
+    const icon  = CAT_ICONS[cat] || "📰";
+    const label = CAT_LABELS[cat] || cat.toUpperCase();
+    html += `<div class="cat-header" style="color:${color};background:${color}18">${icon}  ${label}</div>`;
+    html += groups[cat].slice(0,5).map(buildCard).join("");
+  });
+
+  feed.innerHTML = html;
+}
+
+function setProgress(pct, label){
+  const wrap = document.getElementById("progressWrap");
+  wrap.style.display = "block";
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("progressLabel").textContent = label;
+  if(pct >= 100) setTimeout(() => { wrap.style.display = "none"; }, 1500);
+}
+
+async function loadNews(){
+  try {
+    setProgress(10, "Connecting to server…");
+    const status = await fetch(`${SERVER}/status`).then(r=>r.json()).catch(()=>({is_fresh:false}));
+    setProgress(30, "Checking for fresh news…");
+
+    if(!status.is_fresh){
+      setProgress(40, "Fetching latest headlines…");
+      await fetch(`${SERVER}/fetch`, {method:"POST"}).catch(()=>{});
+      setProgress(80, "AI summarizing articles…");
+    }
+
+    setProgress(90, "Downloading articles…");
+    const data = await fetch(`${SERVER}/news`).then(r=>r.json());
+    allArticles = data.articles || [];
+    setProgress(100, `Loaded ${allArticles.length} articles`);
+    renderFeed();
+  } catch(e) {
+    document.getElementById("feed").innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <p>Could not connect to server</p>
+        <p style="font-size:12px;margin-top:8px">Check your connection and try refreshing</p>
+      </div>`;
+    document.getElementById("progressWrap").style.display = "none";
+  }
+}
+
+async function refreshNews(){
+  const btn = document.getElementById("refreshBtn");
+  btn.disabled = true;
+  btn.textContent = "Refreshing…";
+  document.getElementById("feed").innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Fetching fresh news…</p></div>`;
+
+  try {
+    setProgress(10, "Connecting to server…");
+    await fetch(`${SERVER}/fetch`, {method:"POST", signal: AbortSignal.timeout(300000)});
+    setProgress(80, "Downloading articles…");
+    const data = await fetch(`${SERVER}/news`).then(r=>r.json());
+    allArticles = data.articles || [];
+    setProgress(100, `Loaded ${allArticles.length} fresh articles`);
+    renderFeed();
+  } catch(e) {
+    document.getElementById("progressWrap").style.display = "none";
+    document.getElementById("feed").innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p>Refresh failed. Try again.</p></div>`;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = "↻ &nbsp;Refresh News";
+}
+
+buildNav();
+loadNews();
+</script>
+</body>
+</html>
