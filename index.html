@@ -1095,10 +1095,14 @@
     </div>
 
     <script>
-        // Configurable API Base URL:
-        // Defaults to '' (same-origin relative URLs) for local dev and unified Render deployments.
-        // For decoupled frontend hosting (Vercel/Netlify), set window.NEXUS_API_BASE or localStorage('NEXUS_API_BASE').
-        const API_BASE = (window.NEXUS_API_BASE || localStorage.getItem('NEXUS_API_BASE') || '').replace(/\/+$/, '');
+        // Production Render backend URL:
+        const DEFAULT_PROD_API_BASE = 'https://nexus-news-agent-api.onrender.com';
+
+        // Configurable API Base URL with priority:
+        // 1. window.NEXUS_API_BASE (explicit runtime override / local dev injection)
+        // 2. localStorage.getItem('NEXUS_API_BASE') (browser storage override)
+        // 3. Production Render backend URL (default for production builds)
+        const API_BASE = (window.NEXUS_API_BASE || localStorage.getItem('NEXUS_API_BASE') || DEFAULT_PROD_API_BASE).replace(/\/+$/, '');
         function getApiUrl(path) {
             return `${API_BASE}${path.startsWith('/') ? path : '/' + path}`;
         }
