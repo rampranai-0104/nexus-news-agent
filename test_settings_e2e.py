@@ -181,12 +181,25 @@ def run_tests():
 
     # 8. Clear cache test (POST /data/clear_cache)
     print("\n--- 8. Testing Clear Cache ---")
+    def get_article_counts_and_summaries():
+        conn, db_type = get_connection()
+        if db_type == "mongodb":
+            database_name = os.getenv("DATABASE_NAME", "nexus_news")
+            db = conn[database_name]
+            total = db.articles.count_documents({})
+            summaries = db.articles.count_documents({"summary": {"$ne": None, "$nin": ["", None]}})
+            return total, summaries
+        else:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM news")
+            total = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM news WHERE summary IS NOT NULL AND summary != ''")
+            summaries = cursor.fetchone()[0]
+            conn.close()
+            return total, summaries
+
     # Verify article count before
-    conn, _ = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM news")
-    total_before = cursor.fetchone()[0]
-    conn.close()
+    total_before, summaries_before = get_article_counts_and_summaries()
 
     res = requests.post(f"{base_url}/data/clear_cache")
     assert res.status_code == 200
@@ -195,13 +208,7 @@ def run_tests():
     assert "Cache cleared successfully" in clear_json["message"]
 
     # Verify article count after clear cache is unchanged
-    conn, _ = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM news")
-    total_after = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM news WHERE summary IS NOT NULL AND summary != ''")
-    summaries_after = cursor.fetchone()[0]
-    conn.close()
+    total_after, summaries_after = get_article_counts_and_summaries()
     
     assert total_before == total_after, f"Articles deleted during cache clear! {total_before} vs {total_after}"
     assert summaries_after == 0, f"Summaries were not cleared! Found {summaries_after}"
@@ -222,11 +229,7 @@ def run_tests():
     assert reset_json["data"]["ai_features"] == True # Default restored
 
     # Verify articles still preserved
-    conn, _ = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM news")
-    total_after_reset = cursor.fetchone()[0]
-    conn.close()
+    total_after_reset, _ = get_article_counts_and_summaries()
     assert total_after_reset == total_before, f"Articles deleted during reset! {total_before} vs {total_after_reset}"
     print(f"[PASS] Application reset: all settings restored to defaults, {total_after_reset} articles preserved.")
 

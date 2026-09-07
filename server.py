@@ -26,14 +26,55 @@ init_db()
 
 app = FastAPI(title="Nexus News API")
 
-# Setup CORS if needed
+# Setup CORS with production and development origin support
+frontend_origin_env = os.getenv("FRONTEND_ORIGIN", "").strip()
+default_origins = [
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+    "http://127.0.0.1:5500",
+    "http://localhost:3000",
+    "http://localhost:5173"
+]
+
+if frontend_origin_env == "*":
+    allow_origins = ["*"]
+    allow_credentials = False
+elif frontend_origin_env:
+    allow_origins = list(default_origins)
+    for origin in frontend_origin_env.split(","):
+        cleaned = origin.strip()
+        if cleaned and cleaned not in allow_origins:
+            allow_origins.append(cleaned)
+    allow_credentials = True
+else:
+    allow_origins = list(default_origins)
+    allow_credentials = True
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=allow_origins,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Global database error handling
+@app.exception_handler(RuntimeError)
+async def runtime_error_handler(request: Request, exc: RuntimeError):
+    err_str = str(exc)
+    logger.error(f"Runtime error on {request.url.path}: {err_str}")
+    if "MongoDB" in err_str or "database" in err_str.lower():
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "error",
+                "message": "Database service is temporarily unavailable. Please try again shortly."
+            }
+        )
+    return JSONResponse(
+        status_code=500,
+        content={"status": "error", "message": "An internal server error occurred."}
+    )
 
 # Prevent stale caching on API responses
 @app.middleware("http")
@@ -230,7 +271,15 @@ async def get_news(page: int = 1, limit: int = None, category: str = None, searc
         import traceback
         err_detail = traceback.format_exc()
         logger.error(f"Error in /news: {err_detail}")
-        return JSONResponse(status_code=500, content={"status": "error", "message": str(e), "traceback": err_detail})
+        return JSONResponse(status_code=500, content={"status": "error", "message": "Failed to retrieve news articles."})
+
+@app.get("/health")
+async def get_health():
+    """Production health check endpoint for monitoring, load balancers, and Render."""
+    return {
+        "status": "ok",
+        "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    }
 
 @app.get("/status")
 async def get_status():
@@ -338,6 +387,23 @@ async def reset_settings():
         content={"status": "error", "message": "Failed to reset application data"}
     )
 
+@app.post("/data/cleanup-expired")
+async def cleanup_expired(days: int = 7):
+    from db.database import cleanup_expired_articles
+    try:
+        stats = cleanup_expired_articles(days=days)
+        return {
+            "status": "success",
+            "data": stats,
+            "message": f"Purged {stats.get('deleted', 0)} articles older than {days} days"
+        }
+    except Exception as e:
+        logger.error(f"Failed to cleanup expired articles: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": "Failed to cleanup expired articles"}
+        )
+
 @app.get("/for-you")
 async def get_for_you(page: int = 1, limit: int = 20):
     from core.agent_controller import AgentController
@@ -396,8 +462,17 @@ async def set_preferences(prefs: PreferencesUpdate):
     return {"status": "ok"}
 
 @app.get("/article/{id}/read")
-async def read_article(id: int):
+async def read_article(id: str):
     success = mark_as_read(id)
     if success:
         return {"status": "ok"}
     raise HTTPException(status_code=400, detail="Failed to mark as read")
+
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", "8000"))
+    host = os.getenv("HOST", "0.0.0.0")
+    logger.info(f"Starting Nexus News API on {host}:{port}")
+    uvicorn.run("server:app", host=host, port=port, reload=False)
+

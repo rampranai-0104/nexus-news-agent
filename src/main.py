@@ -15,7 +15,7 @@ from utils.deduplicator import deduplicate
 from utils.news_ranker import rank_articles
 from ai.categorizer import categorize_news_list
 from utils.breaking_news import detect_breaking
-from db.database import save_news, mark_ran_today, get_db_stats
+from db.database import save_news, mark_ran_today, get_db_stats, cleanup_expired_articles
 from core.logger import get_logger
 from config import get_config
 
@@ -101,11 +101,15 @@ def run_pipeline(progress_callback=None):
     db_stats = save_news(final)
     mark_ran_today()
     
+    # 10. 7-Day Automatic Retention Cleanup
+    report("Cleaning expired articles (>7 days)", 98)
+    cleanup_stats = cleanup_expired_articles(days=7)
+    
     end_time = datetime.datetime.now(datetime.timezone.utc)
     total_db_info = get_db_stats()
     health_summary = source_tracker.get_summary()
     
-    # 10. Structured summary log (Requirement #16)
+    # 11. Structured summary log (Requirement #16)
     summary_log = f"""
     ==================================================
     Nexus News Ingestion Pipeline Summary
@@ -123,6 +127,7 @@ def run_pipeline(progress_callback=None):
     New articles saved:       {db_stats.get('new_articles', 0)}
     Duplicates encountered:   {db_stats.get('duplicates', 0)}
     Updated articles:         {db_stats.get('updated', 0)}
+    Articles purged (>7d):    {cleanup_stats.get('deleted', 0)}
     
     Database total articles:  {total_db_info.get('total_articles', 0)}
     Newest article timestamp: {db_stats.get('newest_published_at') or total_db_info.get('newest_published')}
@@ -135,6 +140,7 @@ def run_pipeline(progress_callback=None):
         "new_articles": db_stats.get("new_articles", 0),
         "duplicates": db_stats.get("duplicates", 0),
         "updated": db_stats.get("updated", 0),
+        "articles_purged": cleanup_stats.get("deleted", 0),
         "database_total": total_db_info.get("total_articles", 0),
         "newest_published_at": db_stats.get("newest_published_at") or total_db_info.get("newest_published"),
         "updated_at": end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),

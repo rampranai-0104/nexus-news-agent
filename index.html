@@ -1095,6 +1095,14 @@
     </div>
 
     <script>
+        // Configurable API Base URL:
+        // Defaults to '' (same-origin relative URLs) for local dev and unified Render deployments.
+        // For decoupled frontend hosting (Vercel/Netlify), set window.NEXUS_API_BASE or localStorage('NEXUS_API_BASE').
+        const API_BASE = (window.NEXUS_API_BASE || localStorage.getItem('NEXUS_API_BASE') || '').replace(/\/+$/, '');
+        function getApiUrl(path) {
+            return `${API_BASE}${path.startsWith('/') ? path : '/' + path}`;
+        }
+
         // State
         let currentPage = 1;
         let currentView = 'category'; // 'briefing' | 'breaking' | 'category' | 'search'
@@ -1187,7 +1195,7 @@
 
         async function fetchSettings() {
             try {
-                const res = await fetch('/settings', { cache: 'no-store' });
+                const res = await fetch(getApiUrl('/settings'), { cache: 'no-store' });
                 if (!res.ok) throw new Error("Settings fetch failed");
                 const json = await res.json();
                 currentSettings = (json.data !== undefined) ? json.data : json;
@@ -1411,7 +1419,7 @@
             };
 
             try {
-                const res = await fetch('/settings', {
+                const res = await fetch(getApiUrl('/settings'), {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(payload),
@@ -1473,7 +1481,7 @@
                 desc.textContent = "This will remove cached article summaries. All news articles, URLs, dates, categories, and your settings will be preserved.";
                 confirmCallback = async () => {
                     try {
-                        const res = await fetch('/data/clear_cache', { method: 'POST', cache: 'no-store' });
+                        const res = await fetch(getApiUrl('/data/clear_cache'), { method: 'POST', cache: 'no-store' });
                         const json = await res.json();
                         closeConfirm();
                         showToast(json.message || "Cache cleared successfully.");
@@ -1488,7 +1496,7 @@
                 desc.textContent = "All settings will be restored to canonical defaults and preferences cleared. News articles will NOT be deleted.";
                 confirmCallback = async () => {
                     try {
-                        const res = await fetch('/data/reset', { method: 'POST', cache: 'no-store' });
+                        const res = await fetch(getApiUrl('/data/reset'), { method: 'POST', cache: 'no-store' });
                         const json = await res.json();
                         try {
                             localStorage.clear();
@@ -1754,7 +1762,7 @@
             if (!silent) setMainLoading("Preparing your morning briefing...");
             
             try {
-                const res = await fetch('/briefing', { cache: 'no-store' });
+                const res = await fetch(getApiUrl('/briefing'), { cache: 'no-store' });
                 if (!res.ok) throw new Error("HTTP error");
                 const json = await res.json();
                 
@@ -1799,7 +1807,7 @@
             if (!silent) setMainLoading("Checking for breaking news...");
             
             try {
-                const res = await fetch('/breaking', { cache: 'no-store' });
+                const res = await fetch(getApiUrl('/breaking'), { cache: 'no-store' });
                 if (!res.ok) throw new Error("HTTP error");
                 const json = await res.json();
                 
@@ -1911,7 +1919,7 @@
                 if (currentCategory) url += `&category=${currentCategory}`;
                 if (currentSearch) url += `&search=${encodeURIComponent(currentSearch)}`;
 
-                const res = await fetch(url, { cache: 'no-store' });
+                const res = await fetch(getApiUrl(url), { cache: 'no-store' });
                 if (!res.ok) throw new Error("HTTP error");
                 const json = await res.json();
                 
@@ -2013,7 +2021,7 @@
             const pillText = document.getElementById('refreshStatusText');
             
             try {
-                const res = await fetch('/refresh-status', { cache: 'no-store' });
+                const res = await fetch(getApiUrl('/refresh-status'), { cache: 'no-store' });
                 if (!res.ok) throw new Error("Status check failed");
                 const data = await res.json();
                 
@@ -2059,7 +2067,7 @@
             
             try {
                 const url = '/refresh-news' + (force ? '?force=true' : '');
-                const res = await fetch(url, { method: 'POST', cache: 'no-store' });
+                const res = await fetch(getApiUrl(url), { method: 'POST', cache: 'no-store' });
                 const json = await res.json();
                 
                 if (json.status === 'success') {
@@ -2105,7 +2113,7 @@
         function pollRefreshStatus() {
             const interval = setInterval(async () => {
                 try {
-                    const res = await fetch('/refresh-status', { cache: 'no-store' });
+                    const res = await fetch(getApiUrl('/refresh-status'), { cache: 'no-store' });
                     const data = await res.json();
                     if (data.status !== 'refresh_in_progress') {
                         clearInterval(interval);
@@ -2125,7 +2133,7 @@
             if (!text) return;
             input.value = '';
             try {
-                const res = await fetch('/chat', { 
+                const res = await fetch(getApiUrl('/chat'), { 
                     method: 'POST', 
                     headers: {'Content-Type': 'application/json'}, 
                     body: JSON.stringify({message: text}),
