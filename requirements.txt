@@ -4,9 +4,11 @@ requests
 python-dotenv
 feedparser
 groq
-sumy
-nltk
+openai
 numpy
 plyer
-PyQt5
 psycopg2-binary
+gnewsclient
+jinja2
+beautifulsoup4
+python-dateutil

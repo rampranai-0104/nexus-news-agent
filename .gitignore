@@ -7,3 +7,9 @@ __pycache__/
 *.spec
 dist/
 build/
+*.db-journal
+node_modules/
+.vercel/
+web_legacy/venv/
+data/*.bak*
+venv/

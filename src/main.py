@@ -1,67 +1,158 @@
-import os
 import sys
+import os
+import time
+import datetime
+
 sys.path.append(os.path.dirname(__file__))
 
-from core.logger import get_logger
-from fetch.news_api import fetch_all_news
-from ai.summarizer import summarize_news_list
+from fetch.geolocator import get_current_location
+from fetch.rss_parser import fetch_all_rss
+from fetch.gnews_api import fetch_gnews
+from fetch.news_api import fetch_newsapi
+from fetch.source_tracker import source_tracker
+from ai.headline_cleaner import clean_all_headlines
+from utils.deduplicator import deduplicate
+from utils.news_ranker import rank_articles
 from ai.categorizer import categorize_news_list
-from db.database import init_db, save_news, get_news_by_category, mark_ran_today
-import sqlite3
+from utils.breaking_news import detect_breaking
+from db.database import save_news, mark_ran_today, get_db_stats
+from core.logger import get_logger
+from config import get_config
 
-logger = get_logger("main")
+logger = get_logger("pipeline")
 
-DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'news.db')
-
-def clear_old_news():
-    """Wipe articles from previous days so feed stays fresh."""
+def safe_fetch(func, *args, **kwargs):
     try:
-        conn = sqlite3.connect(DB_PATH)
-        conn.execute("DELETE FROM news")
-        conn.commit()
-        conn.close()
-        logger.info("Cleared old news from database")
+        return func(*args, **kwargs)
     except Exception as e:
-        logger.error(f"Failed to clear news: {e}")
+        logger.error(f"Fetch function {func.__name__} failed: {e}")
+        return []
 
-def run_pipeline(force=False):
-    logger.info("=== Morning News Agent Starting ===")
-
-    init_db()
-
-    # Always clear old articles before fetching fresh ones
-    clear_old_news()
-
-    # Step 1 - Fetch
-    print("\n[1/4] Fetching latest news (last 24 hours)...")
-    news = fetch_all_news()
-    print(f"  Fetched {len(news)} articles")
-
-    if not news:
-        print("  No articles fetched — check API key or internet.")
-        return get_news_by_category()
-
-    # Step 2 - Categorize
-    print("\n[2/4] Categorizing...")
-    news = categorize_news_list(news)
-
-    # Step 3 - Summarize
-    print("\n[3/4] Summarizing with AI...")
-    news = summarize_news_list(news)
-
-    # Step 4 - Save
-    print("\n[4/4] Saving to database...")
-    save_news(news)
+def run_pipeline(progress_callback=None):
+    """
+    Full agent news ingestion and refinement pipeline.
+    Returns: dict with status, articles, and rich metadata.
+    """
+    start_time = datetime.datetime.now(datetime.timezone.utc)
+    
+    def report(stage, pct):
+        if progress_callback:
+            try:
+                progress_callback(stage, pct)
+            except Exception:
+                pass
+            
+    config = get_config()
+    preferences = config.get("preferred_categories", [])
+    
+    # 1. Detect location
+    report("Detecting location", 5)
+    location = get_current_location()
+    
+    # 2. Fetch from ALL sources with isolation
+    report("Fetching news", 15)
+    rss_news = safe_fetch(fetch_all_rss)
+    gnews_news = safe_fetch(fetch_gnews, location)
+    api_news = safe_fetch(fetch_newsapi, location)
+    
+    raw_news = rss_news + gnews_news + api_news
+    
+    if not raw_news:
+        logger.warning("No raw articles fetched from any source.")
+        report("No sources available — pipeline finished", 100)
+        return {
+            "status": "warning",
+            "articles": [],
+            "meta": {
+                "fetched": 0,
+                "new_articles": 0,
+                "duplicates": 0,
+                "updated": 0,
+                "updated_at": start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+            }
+        }
+        
+    # 3. Clean headlines
+    report("Cleaning headlines", 30)
+    raw_news = clean_all_headlines(raw_news)
+    
+    # 4. Deduplicate
+    report("Removing duplicates", 40)
+    unique = deduplicate(raw_news)
+    
+    # 5. Categorize
+    report("Categorizing articles", 50)
+    categorized = categorize_news_list(unique)
+    
+    # 6. Rank
+    report("Ranking articles", 65)
+    ranked = rank_articles(categorized, location, preferences)
+    
+    # 7. Detect breaking news
+    report("Detecting breaking news", 80)
+    all_articles = detect_breaking(ranked)
+    
+    # 8. Re-rank after breaking news detection
+    report("Finalizing importance", 90)
+    final = rank_articles(all_articles, location, preferences)
+    
+    # 9. Save to database
+    report("Saving to database", 95)
+    db_stats = save_news(final)
     mark_ran_today()
-
-    logger.info("Pipeline complete")
-    print(f"\nPipeline complete! {len(news)} articles ready.")
-    return news
+    
+    end_time = datetime.datetime.now(datetime.timezone.utc)
+    total_db_info = get_db_stats()
+    health_summary = source_tracker.get_summary()
+    
+    # 10. Structured summary log (Requirement #16)
+    summary_log = f"""
+    ==================================================
+    Nexus News Ingestion Pipeline Summary
+    ==================================================
+    Refresh started at:       {start_time.strftime("%Y-%m-%dT%H:%M:%SZ")}
+    Refresh completed at:     {end_time.strftime("%Y-%m-%dT%H:%M:%SZ")}
+    Duration:                 {(end_time - start_time).total_seconds():.2f}s
+    
+    Sources Tracked:          {health_summary['total_tracked']}
+    Sources Healthy:          {health_summary['healthy']}
+    Sources Failing:          {health_summary['failing']}
+    
+    Articles fetched:         {len(raw_news)}
+    Deduplicated pool:        {len(unique)}
+    New articles saved:       {db_stats.get('new_articles', 0)}
+    Duplicates encountered:   {db_stats.get('duplicates', 0)}
+    Updated articles:         {db_stats.get('updated', 0)}
+    
+    Database total articles:  {total_db_info.get('total_articles', 0)}
+    Newest article timestamp: {db_stats.get('newest_published_at') or total_db_info.get('newest_published')}
+    ==================================================
+    """
+    logger.info(summary_log)
+    
+    meta = {
+        "fetched": len(raw_news),
+        "new_articles": db_stats.get("new_articles", 0),
+        "duplicates": db_stats.get("duplicates", 0),
+        "updated": db_stats.get("updated", 0),
+        "database_total": total_db_info.get("total_articles", 0),
+        "newest_published_at": db_stats.get("newest_published_at") or total_db_info.get("newest_published"),
+        "updated_at": end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "sources_tracked": health_summary["total_tracked"],
+        "sources_healthy": health_summary["healthy"],
+        "sources_failing": health_summary["failing"]
+    }
+    
+    report("Completed", 100)
+    return {
+        "status": "success",
+        "articles": final,
+        "meta": meta
+    }
 
 if __name__ == "__main__":
-    articles = run_pipeline(force=True)
-    print(f"\n=== {len(articles)} Articles ===\n")
-    for item in articles:
-        print(f"[{item.get('category','?').upper()}] {item.get('title','')[:70]}")
-        print(f"  Published: {item.get('published','')[:10]}  Source: {item.get('source','')}")
-        print()
+    def print_progress(stage, pct):
+        print(f"[{pct}%] {stage}")
+        
+    result = run_pipeline(progress_callback=print_progress)
+    print("Pipeline result meta:", result.get("meta"))

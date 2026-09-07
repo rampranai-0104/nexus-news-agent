@@ -1,258 +1,144 @@
-import feedparser
-import os
-import sys
-import re
 import requests
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import feedparser
+import datetime
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 from core.logger import get_logger
+from fetch.scraper import scrape_article
+from fetch.source_tracker import source_tracker
+from utils.date_parser import normalize_article_dates
+from utils.text_utils import clean_text, is_boilerplate_text, clean_boilerplate_from_content
 
 logger = get_logger("rss_parser")
 
-# Multiple sources per category — mixed so no single source dominates
 RSS_FEEDS = {
+    "local": [
+        "https://www.thehindu.com/news/cities/Hyderabad/feeder/default.rss",
+        "https://timesofindia.indiatimes.com/rssfeeds/-2128833038.cms"
+    ],
     "national": [
-        ("The Hindu",       "https://www.thehindu.com/news/national/feeder/default.rss"),
-        ("NDTV",            "https://feeds.feedburner.com/ndtvnews-india-news"),
-        ("Indian Express",  "https://indianexpress.com/section/india/feed/"),
-        ("Hindustan Times", "https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml"),
-        ("Times of India",  "https://timesofindia.indiatimes.com/rssfeeds/296589292.cms"),
+        "https://timesofindia.indiatimes.com/rssfeedstopstories.cms",
+        "https://www.thehindu.com/news/national/feeder/default.rss"
     ],
     "global": [
-        ("BBC World",       "http://feeds.bbci.co.uk/news/world/rss.xml"),
-        ("The Hindu",       "https://www.thehindu.com/news/international/feeder/default.rss"),
-        ("Indian Express",  "https://indianexpress.com/section/world/feed/"),
-        ("NDTV World",      "https://feeds.feedburner.com/ndtvnews-world-news"),
-        ("Times of India",  "https://timesofindia.indiatimes.com/rssfeeds/296589294.cms"),
-    ],
-    "sports": [
-        ("Indian Express",  "https://indianexpress.com/section/sports/feed/"),
-        ("Times of India",  "https://timesofindia.indiatimes.com/rssfeeds/4719148.cms"),
-        ("The Hindu",       "https://www.thehindu.com/sport/feeder/default.rss"),
-        ("NDTV Sports",     "https://feeds.feedburner.com/ndtvnews-sports"),
-        ("BBC Sport",       "http://feeds.bbci.co.uk/sport/rss.xml"),
+        "https://feeds.bbci.co.uk/news/world/rss.xml",
+        "https://www.aljazeera.com/xml/rss/all.xml"
     ],
     "technology": [
-        ("Indian Express",  "https://indianexpress.com/section/technology/feed/"),
-        ("NDTV Tech",       "https://feeds.feedburner.com/ndtvnews-tech"),
-        ("The Hindu",       "https://www.thehindu.com/sci-tech/technology/feeder/default.rss"),
-        ("TechCrunch",      "https://techcrunch.com/feed/"),
-        ("Times of India",  "https://timesofindia.indiatimes.com/rssfeeds/66949542.cms"),
+        "https://techcrunch.com/feed/",
+        "https://www.theverge.com/rss/index.xml"
     ],
     "business": [
-        ("Economic Times",  "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms"),
-        ("Indian Express",  "https://indianexpress.com/section/business/feed/"),
-        ("The Hindu",       "https://www.thehindu.com/business/feeder/default.rss"),
-        ("NDTV Business",   "https://feeds.feedburner.com/ndtvnews-business"),
-        ("Times of India",  "https://timesofindia.indiatimes.com/rssfeeds/1898055.cms"),
+        "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664",
+        "https://economictimes.indiatimes.com/news/economy/rssfeeds/1373380680.cms",
+        "https://www.thehindubusinessline.com/news/feeder/default.rss"
     ],
-    "local": [
-        ("The Hindu AP",    "https://www.thehindu.com/news/national/andhra-pradesh/feeder/default.rss"),
-        ("The Hindu TS",    "https://www.thehindu.com/news/national/telangana/feeder/default.rss"),
-        ("News Minute",     "https://www.thenewsminute.com/feed"),
-        ("Indian Express Hyd", "https://indianexpress.com/section/cities/hyderabad/feed/"),
-        ("Telangana Today", "https://telanganatoday.com/feed"),
-    ],
+    "sports": [
+        "https://www.espn.com/espn/rss/news",
+        "https://feeds.bbci.co.uk/sport/rss.xml",
+        "https://www.thehindu.com/sport/feeder/default.rss"
+    ]
 }
 
-def clean_html(text):
-    if not text:
-        return ""
-    text = re.sub(r'<[^>]+>', '', text)
-    text = (text
-            .replace('&nbsp;', ' ')
-            .replace('&amp;', '&')
-            .replace('&lt;', '<')
-            .replace('&gt;', '>')
-            .replace('&quot;', '"')
-            .replace('&#39;', "'"))
-    return text.strip()
-
-def scrape_full_article(url):
-    try:
-        if not url:
-            return ""
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/120.0.0.0 Safari/537.36"
-            )
-        }
-        response = requests.get(url, headers=headers, timeout=8)
-        if response.status_code != 200:
-            return ""
-
-        html = response.text
-        for tag in ['script', 'style', 'nav', 'header', 'footer',
-                    'aside', 'menu', 'noscript', 'form', 'button']:
-            html = re.sub(
-                rf'<{tag}[^>]*>.*?</{tag}>', '', html,
-                flags=re.DOTALL | re.IGNORECASE
-            )
-
-        paragraphs = re.findall(r'<p[^>]*>(.*?)</p>', html, flags=re.DOTALL)
-
-        JUNK_PHRASES = [
-            "sign in", "log in", "subscribe", "newsletter", "cookie",
-            "privacy policy", "terms of use", "all rights reserved",
-            "follow us", "click here", "advertisement", "download app",
-            "push notification", "breaking news alert", "create account",
-            "already a member", "install app", "get app"
-        ]
-
-        clean_paras = []
-        for p in paragraphs:
-            clean = re.sub(r'<[^>]+>', '', p).strip()
-            clean = (clean
-                     .replace('&nbsp;', ' ')
-                     .replace('&amp;', '&')
-                     .replace('&lt;', '<')
-                     .replace('&gt;', '>')
-                     .replace('&quot;', '"')
-                     .replace('&#39;', "'"))
-            if len(clean) < 50:
-                continue
-            space_ratio = clean.count(' ') / max(len(clean), 1)
-            if space_ratio < 0.05:
-                continue
-            if any(phrase in clean.lower() for phrase in JUNK_PHRASES):
-                continue
-            clean_paras.append(clean)
-
-        full_text = " ".join(clean_paras[:15])
-        if len(full_text) > 200:
-            return full_text
-        return ""
-
-    except Exception as e:
-        logger.warning(f"Scraping failed for {url}: {e}")
-        return ""
-
-
-def fetch_rss_category(category, articles_per_source=1, target=5):
+def fetch_all_rss():
     """
-    Fetch from ALL sources — 1 article per source by default.
-    This ensures variety — no single source dominates.
+    Fetch news from configured RSS feeds with timeout protection and source health tracking.
+    Gracefully handles individual feed failures.
+    Returns list of normalized article dicts.
     """
-    feeds      = RSS_FEEDS.get(category, [])
-    articles   = []
-    seen_titles = set()
-
-    for source_name, feed_url in feeds:
-        if len(articles) >= target:
-            break
-        try:
-            print(f"    [{source_name}] Fetching...")
-            feed = feedparser.parse(feed_url)
-
-            if not feed.entries:
-                logger.warning(f"No entries: {feed_url}")
+    articles_result = []
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/rss+xml, application/xml, text/xml, */*"
+    }
+    
+    for category, feeds in RSS_FEEDS.items():
+        for feed_url in feeds:
+            domain = urlparse(feed_url).netloc
+            if source_tracker.should_skip(feed_url):
+                logger.info(f"Skipping recently failed feed: {feed_url}")
                 continue
-
-            count = 0
-            for entry in feed.entries:
-                if count >= articles_per_source:
-                    break
-
-                title = clean_html(entry.get("title", ""))
-                if not title or "[Removed]" in title:
-                    continue
-
-                # Skip duplicates
-                title_key = title.lower()[:60]
-                if title_key in seen_titles:
-                    continue
-                seen_titles.add(title_key)
-
-                description = clean_html(
-                    entry.get("summary", "") or
-                    entry.get("description", "")
-                )
-                url = entry.get("link", "")
-
-                print(f"    Scraping: {title[:50]}...")
-                content = scrape_full_article(url)
-
-                articles.append({
-                    "title":       title,
-                    "description": description,
-                    "content":     content if content else description,
-                    "source":      source_name,
-                    "url":         url,
-                    "category":    category,
-                    "published":   entry.get("published", ""),
-                })
-                count += 1
-
-            logger.info(f"[{category}] Got {count} from {source_name}")
-
-        except Exception as e:
-            logger.error(f"Feed failed [{source_name}]: {e}")
-            continue
-
-    # If we don't have enough, get more from available sources
-    if len(articles) < target:
-        needed = target - len(articles)
-        for source_name, feed_url in feeds:
-            if needed <= 0:
-                break
+                
             try:
-                feed = feedparser.parse(feed_url)
-                for entry in feed.entries[articles_per_source:]:
-                    if needed <= 0:
-                        break
-                    title = clean_html(entry.get("title", ""))
+                # Fetch feed with strict 8-second timeout
+                res = requests.get(feed_url, headers=headers, timeout=8)
+                res.raise_for_status()
+                
+                feed = feedparser.parse(res.content)
+                
+                if getattr(feed, 'bozo', 0) == 1 and not feed.entries:
+                    reason = getattr(feed, 'bozo_exception', 'Malformed XML')
+                    source_tracker.record_failure(feed_url, f"Parse error: {reason}")
+                    logger.warning(f"Failed to parse RSS feed {feed_url}: {reason}")
+                    continue
+                    
+                source_tracker.record_success(feed_url)
+                source_title = feed.feed.get("title", domain)
+                
+                # Take top 25 from each feed to ensure broad fresh coverage
+                for entry in feed.entries[:25]:
+                    title = entry.get("title")
                     if not title:
                         continue
-                    title_key = title.lower()[:60]
-                    if title_key in seen_titles:
-                        continue
-                    seen_titles.add(title_key)
-
-                    description = clean_html(
-                        entry.get("summary", "") or
-                        entry.get("description", "")
-                    )
+                        
+                    title = clean_text(title)
+                    description = entry.get("summary", entry.get("description", ""))
+                    
+                    # Clean HTML from description if present
+                    if "<" in description and ">" in description:
+                        description = BeautifulSoup(description, "html.parser").get_text()
+                    description = clean_text(description)
+                    if is_boilerplate_text(description):
+                        description = ""
+                    
                     url = entry.get("link", "")
-                    content = scrape_full_article(url)
-
-                    articles.append({
-                        "title":       title,
+                    
+                    # Optional scrape if description is very brief
+                    content = ""
+                    if len(description) < 80 and url:
+                        scraped = scrape_article(url)
+                        if scraped:
+                            content = clean_boilerplate_from_content(scraped)
+                        
+                    # Extract images
+                    image_url = ""
+                    if "media_content" in entry and entry.media_content:
+                        image_url = entry.media_content[0].get("url", "")
+                    elif "enclosures" in entry and entry.enclosures:
+                        for enc in entry.enclosures:
+                            if "image" in enc.get("type", ""):
+                                image_url = enc.get("href", "")
+                                break
+                    elif "media_thumbnail" in entry and entry.media_thumbnail:
+                        image_url = entry.media_thumbnail[0].get("url", "")
+                        
+                    raw_published = entry.get("published")
+                    raw_updated = entry.get("updated")
+                    
+                    article = {
+                        "title": title,
                         "description": description,
-                        "content":     content if content else description,
-                        "source":      source_name,
-                        "url":         url,
-                        "category":    category,
-                        "published":   entry.get("published", ""),
-                    })
-                    needed -= 1
-            except:
-                continue
-
-    logger.info(f"[{category}] Final count: {len(articles)}")
-    return articles[:target]
-
-
-def fetch_all_rss():
-    all_articles = []
-    for category in RSS_FEEDS:
-        print(f"\n  Fetching [{category.upper()}]...")
-        # 1 article per source × 5 sources = 5 varied articles
-        articles = fetch_rss_category(
-            category,
-            articles_per_source=1,
-            target=5
-        )
-        all_articles.extend(articles)
-        print(f"  Got {len(articles)} articles for {category}")
-
-    logger.info(f"Total: {len(all_articles)} articles")
-    return all_articles
-
-
-if __name__ == "__main__":
-    print("Testing RSS parser...\n")
-    articles = fetch_all_rss()
-    print(f"\n--- {len(articles)} total articles ---\n")
-    for a in articles:
-        print(f"[{a['category'].upper():12}] [{a['source']:20}] {a['title'][:50]}")
+                        "content": content,
+                        "url": url,
+                        "source": source_title,
+                        "image_url": image_url,
+                        "category": category,
+                        "feed_category": category
+                    }
+                    
+                    # Apply Safe Date Hierarchy
+                    normalize_article_dates(article, raw_published=raw_published, raw_updated=raw_updated)
+                    articles_result.append(article)
+                    
+            except requests.exceptions.Timeout:
+                source_tracker.record_failure(feed_url, "Timeout (8s)")
+                logger.warning(f"Timeout (8s) fetching RSS feed {feed_url}")
+            except requests.exceptions.HTTPError as e:
+                status = e.response.status_code if e.response is not None else "Unknown"
+                source_tracker.record_failure(feed_url, f"HTTP {status}")
+                logger.warning(f"HTTP {status} fetching RSS feed {feed_url}")
+            except Exception as e:
+                source_tracker.record_failure(feed_url, f"{type(e).__name__}: {e}")
+                logger.warning(f"Error fetching RSS feed {feed_url}: {type(e).__name__} - {e}")
+                
+    return articles_result

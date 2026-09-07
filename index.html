@@ -1,391 +1,2143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Nexus News — Intelligence Briefing</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --primary:#004ac6;--primary-light:#e8eeff;--primary-dim:#2563eb;
-  --surface:#f5f5f8;--card:#ffffff;--border:#e0e0e8;
-  --text:#1a1c1c;--text-muted:#737686;--text-light:#9090a0;
-  --sidebar-w:220px;
-}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--surface);color:var(--text);min-height:100vh;display:flex}
-a{text-decoration:none;color:inherit}
-button{cursor:pointer;border:none;background:none;font-family:inherit}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus News Agent</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 12px 20px;z-index:100;overflow-y:auto}
-.brand{padding:0 8px 20px}
-.brand-name{font-size:18px;font-weight:700;color:var(--primary);letter-spacing:-.3px}
-.brand-tag{font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all .15s;margin-bottom:2px;border:none;width:100%;text-align:left;background:none}
-.nav-item:hover{background:#f0f0f5;color:var(--text)}
-.nav-item.active{background:var(--primary-light);color:var(--primary);font-weight:600}
-.nav-icon{font-size:16px;width:20px;text-align:center}
-.sidebar-footer{margin-top:auto;padding-top:16px}
-.refresh-btn{width:100%;background:var(--primary);color:#fff;padding:11px 16px;border-radius:21px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;border:none;cursor:pointer}
-.refresh-btn:hover{background:var(--primary-dim)}
-.refresh-btn:disabled{background:#c0c0d0;cursor:not-allowed}
+    <style>
+        /* Base / Theme Variables */
+        :root {
+            /* Default Dark Theme */
+            --bg-color: #080808;
+            --surface: #141414;
+            --surface-hover: #1f1f1f;
+            --border: #2a2a2a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #888888;
+            --accent: #d4a843;
+            --breaking: #e53e3e;
+            --success: #10b981;
+            
+            /* Fonts */
+            --font-ui: 'Inter', sans-serif;
+            --font-headline: 'Playfair Display', serif;
+            
+            /* Font Scaling */
+            --fs-base: 16px;
+            --fs-small: 12px;
+            --fs-large: 20px;
+            --fs-h1: 56px;
+            --fs-h2: 36px;
+            --fs-h3: 22px;
+            
+            /* Density */
+            --spacing-base: 24px;
+            --radius: 12px;
+            --transition: all 0.2s ease;
+        }
 
-.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
-.topbar{background:rgba(245,245,248,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.page-title{font-size:20px;font-weight:700;color:var(--text)}
-.page-sub{font-size:12px;color:var(--text-muted);margin-top:2px}
-.search-wrap{position:relative}
-.search-wrap input{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:8px 16px 8px 36px;font-size:13px;width:220px;outline:none;color:var(--text);font-family:inherit;transition:border-color .15s}
-.search-wrap input:focus{border-color:var(--primary)}
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px}
+        /* Light Theme Override */
+        body.theme-light {
+            --bg-color: #f8f9fa;
+            --surface: #ffffff;
+            --surface-hover: #f1f5f9;
+            --border: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent: #b45309;
+        }
+        body.theme-light .header {
+            background: rgba(248, 249, 250, 0.9);
+        }
+        body.theme-light .glass-card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        body.theme-light .glass-card:hover {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+        body.theme-light .featured-story-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+        body.theme-light .featured-story-card:hover {
+            border-color: #cbd5e1;
+            background: #ffffff;
+        }
+        body.theme-light .ai-summary {
+            background: #f8fafc;
+            border-left-color: var(--accent);
+        }
+        body.theme-light .fallback-summary {
+            background: #f8fafc;
+            border-left-color: #cbd5e1;
+        }
+        body.theme-light .chat-bar {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: #cbd5e1;
+            color: #0f172a;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+        }
+        body.theme-light .chat-bar input {
+            color: #0f172a;
+        }
+        body.theme-light .modal {
+            background: #ffffff;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+        body.theme-light .modal-header {
+            background: #f8fafc;
+        }
+        body.theme-light .settings-tabs {
+            background: #f1f5f9;
+        }
+        body.theme-light .settings-tab.active {
+            background: #ffffff;
+        }
+        body.theme-light input[type="text"],
+        body.theme-light input[type="number"],
+        body.theme-light input[type="time"],
+        body.theme-light select {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+        body.theme-light .slider {
+            background-color: #cbd5e1;
+        }
+        body.theme-light input:checked + .slider {
+            background-color: var(--accent);
+        }
+        body.theme-light input:checked + .slider:before {
+            background-color: #ffffff;
+        }
+        body.theme-light .toast {
+            background: #ffffff;
+            color: #0f172a;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
 
-.progress-wrap{padding:8px 32px 0;display:none}
-.progress-bar{height:3px;background:#e0e0e8;border-radius:2px;overflow:hidden}
-.progress-fill{height:100%;background:var(--primary);border-radius:2px;transition:width .4s ease;width:0%}
-.progress-label{font-size:11px;color:var(--primary);padding:4px 0 8px;font-weight:500}
+        /* Font Size Overrides */
+        body.font-small { --fs-base: 13px; --fs-small: 11px; --fs-large: 17px; --fs-h1: 44px; --fs-h2: 28px; --fs-h3: 18px; }
+        body.font-medium { --fs-base: 15px; --fs-small: 12px; --fs-large: 19px; --fs-h1: 52px; --fs-h2: 34px; --fs-h3: 21px; }
+        body.font-large { --fs-base: 17px; --fs-small: 13px; --fs-large: 21px; --fs-h1: 60px; --fs-h2: 40px; --fs-h3: 24px; }
+        body.font-xl { --fs-base: 19px; --fs-small: 15px; --fs-large: 23px; --fs-h1: 68px; --fs-h2: 46px; --fs-h3: 28px; }
 
-.feed{padding:24px 32px;flex:1}
-.cat-header{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:12px;margin-top:8px}
-.article-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:12px;transition:border-color .15s}
-.article-card:hover{border-color:#c0c0d0}
-.card-meta{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.card-cat{font-size:11px;font-weight:700;letter-spacing:.5px}
-.card-dot{color:#d0d0d8;font-size:10px}
-.card-source{font-size:11px;color:var(--text-muted);font-weight:500}
-.card-title{font-size:15px;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:10px}
-.summary-box{background:#f5f6ff;border-left:3px solid var(--primary);border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:12px}
-.summary-tag{font-size:10px;font-weight:700;color:var(--primary);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px}
-.summary-text{font-size:13px;color:#2a2c3c;font-style:italic;line-height:1.6}
-.card-footer{display:flex;align-items:center;justify-content:space-between}
-.sentiment{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
-.s-pos{background:#f0fdf4;color:#15803d}
-.s-neg{background:#fef2f2;color:#b91c1c}
-.s-neu{background:#f0f0f5;color:#555770}
-.read-more{font-size:12px;font-weight:600;color:var(--primary);display:flex;align-items:center;gap:3px;transition:gap .15s}
-.read-more:hover{gap:6px}
+        /* Density Overrides */
+        body.density-comfortable { --spacing-base: 24px; --radius: 12px; }
+        body.density-compact { --spacing-base: 14px; --radius: 8px; }
+        body.density-compact .container { padding: 20px; }
+        body.density-compact .header { padding: 10px 24px; }
+        body.density-compact .glass-card { padding: 14px; }
+        body.density-compact .featured-story-card { padding: 20px; }
+        body.density-compact .top-stories-grid,
+        body.density-compact .article-grid { gap: 14px; margin-bottom: 24px; }
+        body.density-compact .category-layout { gap: 14px; margin-bottom: 24px; }
 
-.loading-state,.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:12px;color:var(--text-muted);text-align:center}
-.spinner{width:32px;height:32px;border:2.5px solid #e0e0e8;border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.empty-icon{font-size:36px;margin-bottom:4px;opacity:.4}
+        /* Animations Override & Reduced Motion */
+        body.anim-off *,
+        body.anim-off *::before,
+        body.anim-off *::after {
+            transition: none !important;
+            animation: none !important;
+        }
+        body.anim-off *:hover {
+            transform: none !important;
+        }
+        body.anim-off .spinning {
+            animation: spin 1s linear infinite !important;
+        }
 
-@media(max-width:768px){
-  .sidebar{transform:translateX(-100%)}
-  .main{margin-left:0}
-  .feed{padding:16px}
-  .topbar{padding:12px 16px}
-}
-</style>
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                transition: none !important;
+                animation: none !important;
+            }
+            *:hover {
+                transform: none !important;
+            }
+            .spinning {
+                animation: spin 1s linear infinite !important;
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color); color: var(--text-primary);
+            font-family: var(--font-ui); font-size: var(--fs-base); line-height: 1.5;
+            -webkit-font-smoothing: antialiased; overflow-x: hidden;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        button, input, select { font-family: inherit; background: none; border: none; color: inherit; font-size: inherit; }
+
+        /* Top Header */
+        .header {
+            display: flex; align-items: center; justify-content: space-between; padding: 18px 40px;
+            border-bottom: 1px solid var(--border); position: sticky; top: 0;
+            background: rgba(var(--bg-color), 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 100;
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; color: var(--text-secondary); font-size: var(--fs-small); font-weight: 500; }
+        .header-left .material-symbols-outlined { cursor: pointer; transition: var(--transition); }
+        .header-left .material-symbols-outlined:hover { color: var(--text-primary); }
+        .logo { font-family: var(--font-headline); font-size: 32px; font-weight: 700; letter-spacing: -0.5px; cursor: pointer; }
+        .header-right { display: flex; align-items: center; gap: 16px; }
+
+        /* Refresh Status Pill in Header */
+        .refresh-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+        .refresh-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); transition: var(--transition); }
+        .refresh-pill.updating { border-color: var(--accent); color: var(--text-primary); }
+        .refresh-pill.updating .dot { background: var(--accent); animation: pulse 1.2s infinite; }
+        .refresh-pill.error .dot { background: var(--breaking); }
+
+        .ai-summary {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-top: 8px;
+        }
+        .ai-summary-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .ai-summary-text {
+            font-size: var(--fs-small);
+            color: var(--text-primary);
+            max-height: 6rem;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 6;
+            -webkit-box-orient: vertical;
+        }
+        .fallback-summary-text {
+            max-height: 6rem;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 6;
+            -webkit-box-orient: vertical;
+        }
+        .refresh-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); transition: var(--transition); }
+        .refresh-pill.updating { border-color: var(--accent); color: var(--text-primary); }
+        .refresh-pill.updating .dot { background: var(--accent); animation: pulse 1.2s infinite; }
+        .refresh-pill.error .dot { background: var(--breaking); }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .spinning { animation: spin 1s linear infinite !important; }
+
+        .search-box {
+            display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border);
+            border-radius: 20px; padding: 6px 16px; transition: var(--transition);
+        }
+        .search-box:focus-within { border-color: var(--accent); }
+        .search-box input { outline: none; padding: 4px 8px; width: 200px; }
+        .search-box .material-symbols-outlined { font-size: 18px; color: var(--text-secondary); }
+
+        .icon-btn {
+            display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+            border-radius: 50%; background: var(--surface); border: 1px solid var(--border); cursor: pointer; transition: var(--transition);
+        }
+        .icon-btn:hover { background: var(--surface-hover); border-color: var(--accent); }
+        .icon-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Categories Nav */
+        .categories {
+            display: flex; gap: 32px; padding: 16px 40px; border-bottom: 1px solid var(--border);
+            overflow-x: auto; white-space: nowrap;
+        }
+        .categories::-webkit-scrollbar { display: none; }
+        .cat-tab {
+            font-size: var(--fs-small); font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--text-secondary); cursor: pointer; transition: var(--transition); padding-bottom: 4px; border-bottom: 2px solid transparent;
+        }
+        .cat-tab:hover, .cat-tab.active { color: var(--text-primary); }
+        .cat-tab.active { border-bottom: 2px solid var(--accent); }
+
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.65);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius); padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 40px;
+        }
+        .glass-panel.breaking-panel { border-left: 4px solid var(--breaking); }
+        
+        /* === ARTICLE CARD STRUCTURAL LAYOUT === */
+        /* Cards stretch to the full height of their grid cell via align-items:stretch on the grid.
+           Inside each card, a flex column is used: the .card-summary-zone grows to fill
+           all available space (flex:1), so the footer is always pinned to the bottom.
+           This eliminates random heights and floating footers. */
+
+        .glass-card {
+            background: rgba(20, 20, 20, 0.4);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius);
+            padding: 0;                     /* reset — inner zones handle padding */
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition); cursor: pointer; height: 100%;
+            overflow: hidden;               /* clip image overflow on hover scale */
+            text-decoration: none;
+        }
+        .glass-card:hover { border-color: rgba(212, 168, 67, 0.3); background: rgba(30, 30, 30, 0.6); transform: translateY(-2px); }
+        .glass-card:hover .card-img-top { transform: scale(1.04); }
+
+        /* The image sits flush at the card top */
+        .card-img-wrap {
+            overflow: hidden;
+            flex-shrink: 0;
+            background: rgba(0,0,0,0.2);
+        }
+        .card-img-top {
+            width: 100%; height: 180px;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+
+        /* All non-image content lives inside .card-body */
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            flex: 1;               /* takes all remaining vertical space */
+            padding: 18px 20px 16px;
+            gap: 0;
+            min-height: 0;         /* allow shrinking for flex children */
+        }
+
+        /* Category + time row */
+        .card-category-time {
+            font-size: 11px; font-weight: 700; color: var(--accent);
+            letter-spacing: 1.5px; text-transform: uppercase;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px; flex-shrink: 0;
+        }
+        .card-category-time span:last-child {
+            color: var(--text-secondary); font-weight: 500;
+            letter-spacing: 0; text-transform: none;
+            white-space: nowrap;
+        }
+
+        /* Headline — clamped to 3 lines on standard cards */
+        .card-title {
+            font-family: var(--font-headline);
+            font-size: var(--fs-large); line-height: 1.3; font-weight: 600;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 8px; flex-shrink: 0;
+        }
+
+        /* Optional description context — 2 lines max on standard cards */
+        .article-context {
+            font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 10px; flex-shrink: 0;
+        }
+
+        /* === SUMMARY ZONE: grows to fill available space, keeping footer pinned === */
+        .card-summary-zone {
+            flex: 1;            /* ← KEY: this zone expands to consume leftover space */
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        /* AI summary box */
+        .ai-summary {
+            background: rgba(18, 18, 18, 0.7);
+            border: 1px solid rgba(212, 168, 67, 0.28);
+            border-radius: 8px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100px;  /* visual rhythm baseline */
+            height: 100%;       /* fills the summary zone */
+            box-sizing: border-box;
+        }
+        /* Extractive synthesis: same structure, slightly muted gold border */
+        .ai-summary--extractive {
+            border-color: rgba(212, 168, 67, 0.16);
+            background: rgba(15, 15, 15, 0.55);
+        }
+        body.theme-light .ai-summary {
+            background: rgba(250, 245, 235, 0.85);
+            border-color: rgba(180, 120, 20, 0.3);
+        }
+        body.theme-light .ai-summary--extractive {
+            background: rgba(248, 248, 245, 0.85);
+            border-color: rgba(180, 120, 20, 0.15);
+        }
+
+        /* Label row: label left, char-count right — never wraps */
+        .ai-summary-label {
+            font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+            color: var(--accent); text-transform: uppercase;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0;
+            margin-bottom: 8px;
+            white-space: nowrap; gap: 8px;
+        }
+        .ai-summary-label-left {
+            display: flex; align-items: center; gap: 5px;
+        }
+        .ai-char-count {
+            color: var(--text-secondary); font-weight: 400;
+            letter-spacing: 0; text-transform: none; font-size: 10px;
+            white-space: nowrap; flex-shrink: 0;
+        }
+
+        /* Summary text — 4 lines max to prevent runaway card height */
+        .ai-summary-text {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 13px; font-weight: 400; line-height: 1.55;
+            color: var(--text-primary);
+            display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+        body.theme-light .ai-summary-text { color: #1a202c; }
+
+        /* Fallback summary box — same proportions as ai-summary */
+        .fallback-summary {
+            background: rgba(20, 20, 20, 0.35);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            display: flex; flex-direction: column;
+            min-height: 100px;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .fallback-summary-label {
+            font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+            color: var(--text-secondary); text-transform: uppercase;
+            display: flex; align-items: center; gap: 6px;
+            flex-shrink: 0; margin-bottom: 8px;
+        }
+        .fallback-summary-text {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 13px; font-weight: 400; line-height: 1.55;
+            color: var(--text-secondary);
+            display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        /* No-summary placeholder */
+        .summary-unavailable {
+            font-size: 12px; color: var(--text-secondary);
+            font-style: italic; line-height: 1.5;
+        }
+
+        /* Card footer — ALWAYS at the bottom via border-top separator */
+        .card-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0 0;
+            margin-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+        body.theme-light .card-footer { border-top-color: rgba(0,0,0,0.06); }
+
+        /* Footer inner elements */
+        .source-info { display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; }
+        .source-badge {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: 700; color: var(--text-primary);
+            flex-shrink: 0; letter-spacing: 0;
+        }
+        body.theme-light .source-badge { background: #f1f5f9; border-color: #cbd5e1; color: #0f172a; }
+        .source-name {
+            font-size: 11px; font-weight: 600; color: var(--text-secondary);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .card-actions { display: flex; gap: 10px; color: var(--text-secondary); flex-shrink: 0; }
+        .card-actions span { font-size: 17px; cursor: pointer; transition: var(--transition); }
+        .card-actions span:hover { color: var(--text-primary); }
+
+        /* Light theme glass card */
+        body.theme-light .glass-panel {
+            background: rgba(255, 255, 255, 0.75); border: 1px solid rgba(0, 0, 0, 0.08); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        }
+        body.theme-light .glass-card {
+            background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        body.theme-light .glass-card:hover {
+            background: rgba(255, 255, 255, 0.85); border-color: rgba(180, 83, 9, 0.3);
+        }
+        body.theme-light .fallback-summary { background: rgba(245,245,245,0.9); }
+
+        /* === GRID LAYOUTS === */
+        .container { max-width: 1400px; margin: 0 auto; padding: 40px; }
+        /* align-items: stretch is default for grid — cards in the same row become equal height */
+        .top-stories-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-base);
+            margin-bottom: 40px;
+            align-items: stretch;
+        }
+        .article-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--spacing-base);
+            margin-bottom: 40px;
+            align-items: stretch;
+        }
+
+        /* Typography */
+        .hero-title { font-family: var(--font-headline); font-size: var(--fs-h2); line-height: 1.2; font-weight: 700; margin-bottom: 16px; }
+        .section-title { font-size: var(--fs-small); font-weight: 700; color: var(--text-secondary); letter-spacing: 2px; text-transform: uppercase; margin-bottom: var(--spacing-base); padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+
+        .breaking-badge {
+            display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-small); font-weight: 700;
+            color: var(--breaking); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+        }
+        .breaking-dot { width: 8px; height: 8px; border-radius: 50%; background-color: var(--breaking); animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(229, 62, 62, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(229, 62, 62, 0); }
+        }
+
+        /* === FEATURED CARD (left column, bigger scale) === */
+        .category-layout { display: grid; grid-template-columns: 60% 1fr; gap: var(--spacing-base); margin-bottom: 40px; align-items: stretch; }
+        .main-story-col { display: flex; flex-direction: column; }
+        .secondary-stories-col { display: flex; flex-direction: column; gap: 12px; }
+
+        .featured-story-card {
+            background: rgba(20, 20, 20, 0.4);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius); padding: 28px;
+            display: flex; flex-direction: column; gap: 0;
+            transition: var(--transition);
+            height: 100%; cursor: pointer;
+            overflow: hidden;
+        }
+        .featured-story-card:hover { border-color: rgba(212, 168, 67, 0.3); background: rgba(30, 30, 30, 0.6); }
+        .featured-story-card:hover .featured-img { transform: scale(1.02); }
+
+        .featured-img-wrap { overflow: hidden; border-radius: 8px; margin: 12px 0; flex-shrink: 0; }
+        .featured-img {
+            width: 100%; aspect-ratio: 16 / 9; object-fit: cover;
+            transition: transform 0.4s ease; display: block;
+            background: rgba(0,0,0,0.2);
+        }
+        .featured-title {
+            font-family: var(--font-headline); font-size: var(--fs-h1);
+            line-height: 1.2; font-weight: 700; margin: 8px 0 10px;
+            /* Featured headlines are allowed to be longer — no clamp */
+        }
+        .featured-context {
+            font-size: var(--fs-base); color: var(--text-secondary);
+            line-height: 1.55;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 12px; flex-shrink: 0;
+        }
+        /* Featured AI summary — more lines allowed */
+        .featured-story-card .ai-summary {
+            min-height: 120px;
+        }
+        .featured-story-card .ai-summary-text {
+            -webkit-line-clamp: 6;
+        }
+        .featured-story-card .fallback-summary-text {
+            -webkit-line-clamp: 6;
+        }
+        .featured-summary-zone {
+            flex: 1; display: flex; flex-direction: column; min-height: 0;
+        }
+        .featured-actions {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-top: 16px; padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+        }
+        .read-full-link {
+            display: inline-flex; align-items: center; gap: 4px;
+            border: 1px solid var(--border); border-radius: 20px;
+            padding: 6px 16px; font-size: var(--fs-small); font-weight: 600;
+            transition: var(--transition); text-decoration: none;
+            color: var(--text-primary);
+        }
+        .read-full-link:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* === SECONDARY (horizontal) CARD === */
+        .glass-card.horizontal {
+            flex-direction: row; padding: 0; height: auto;
+            align-items: stretch; gap: 0; overflow: hidden;
+        }
+        .horizontal-img-wrap {
+            width: 100px; flex-shrink: 0; overflow: hidden;
+        }
+        .horizontal-img-wrap img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+        .horizontal-content {
+            display: flex; flex-direction: column; gap: 6px;
+            flex: 1; min-width: 0;
+            padding: 14px 14px 14px 14px;
+        }
+        .horizontal-content .card-category-time { margin-bottom: 4px; }
+        .horizontal-content .card-title {
+            font-size: var(--fs-base); line-height: 1.3; margin: 0;
+            -webkit-line-clamp: 3;
+        }
+        .horizontal-content .card-footer {
+            margin-top: auto; border-top: none; padding-top: 8px;
+        }
+
+        /* Loading / Error States */
+        .state-msg { font-size: var(--fs-large); color: var(--text-secondary); text-align: center; padding: 80px 20px; }
+        .error-msg { font-size: var(--fs-large); color: var(--breaking); text-align: center; padding: 80px 20px; }
+        .btn-retry { margin-top: 20px; background: var(--surface-hover); border: 1px solid var(--border); padding: 10px 24px; border-radius: 20px; color: var(--text-primary); cursor: pointer; transition: var(--transition); }
+        .btn-retry:hover { background: rgba(255,255,255,0.1); }
+
+        /* Chat Bar */
+        .chat-container { position: fixed; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, var(--bg-color) 60%, transparent); padding: 40px; display: flex; flex-direction: column; align-items: center; z-index: 90; pointer-events: none; }
+        .chat-agent-msg { background: var(--surface); border: 1px solid var(--border); padding: 12px 20px; border-radius: 20px; margin-bottom: 16px; font-size: var(--fs-base); color: var(--text-primary); max-width: 600px; text-align: center; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: auto; white-space: pre-wrap; }
+        .chat-agent-msg.show { opacity: 1; transform: translateY(0); }
+        .chat-bar { width: 100%; max-width: 700px; background: rgba(20,20,20,0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; display: flex; align-items: center; padding: 8px 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: auto; transition: var(--transition); }
+        .chat-bar:focus-within { border-color: var(--accent); }
+        .chat-bar input { flex: 1; padding: 12px; outline: none; }
+        .send-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #000; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition); }
+        .send-btn:hover { transform: scale(1.05); }
+        
+        /* Load More */
+        .load-more-container { text-align: center; margin-top: 20px; }
+        .load-more-btn { background: var(--surface); border: 1px solid var(--border); padding: 12px 32px; border-radius: 30px; font-size: var(--fs-small); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: var(--transition); }
+        .load-more-btn:hover { background: var(--surface-hover); border-color: #555; }
+
+        /* Hamburger Drawer */
+        .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 1000; opacity: 0; visibility: hidden; transition: var(--transition); }
+        .drawer-overlay.open { opacity: 1; visibility: visible; }
+        .drawer { position: fixed; top: 0; left: -300px; width: 300px; height: 100%; background: var(--bg-color); border-right: 1px solid var(--border); z-index: 1001; transition: var(--transition); display: flex; flex-direction: column; overflow-y: auto; }
+        .drawer.open { left: 0; }
+        .drawer-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .drawer-title { font-family: var(--font-headline); font-size: 24px; font-weight: 700; }
+        .drawer-close { cursor: pointer; }
+        .drawer-nav { padding: 20px 0; display: flex; flex-direction: column; }
+        .drawer-item { padding: 12px 24px; display: flex; align-items: center; gap: 16px; font-size: var(--fs-base); font-weight: 500; cursor: pointer; transition: var(--transition); color: var(--text-secondary); }
+        .drawer-item:hover, .drawer-item.active { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+        .drawer-item .material-symbols-outlined { font-size: 20px; }
+        .drawer-divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+        /* Settings Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; pointer-events: none; transition: var(--transition); }
+        .modal-overlay.open { opacity: 1; visibility: visible; pointer-events: auto; }
+        .modal { background: var(--bg-color); width: 90%; max-width: 800px; height: 80vh; border-radius: var(--radius); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); transition: var(--transition); }
+        .modal-overlay.open .modal { transform: scale(1); }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface); }
+        .modal-title { font-family: var(--font-headline); font-size: 24px; font-weight: 700; }
+        .modal-body { display: flex; flex: 1; overflow: hidden; }
+        .settings-tabs { width: 200px; border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; background: var(--surface-hover); }
+        .settings-tab { padding: 16px 20px; font-size: var(--fs-small); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); cursor: pointer; transition: var(--transition); border-left: 3px solid transparent; }
+        .settings-tab:hover { color: var(--text-primary); }
+        .settings-tab.active { color: var(--accent); background: var(--surface); border-left-color: var(--accent); }
+        .settings-content { flex: 1; overflow-y: auto; padding: 32px; }
+        .settings-section { display: none; }
+        .settings-section.active { display: block; }
+        .setting-group { margin-bottom: 32px; }
+        .setting-label { display: block; font-size: var(--fs-base); font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+        .setting-desc { font-size: var(--fs-small); color: var(--text-secondary); margin-bottom: 12px; }
+        input[type="text"], input[type="number"], input[type="time"], select { width: 100%; background: var(--surface); border: 1px solid var(--border); padding: 12px; border-radius: 8px; font-size: var(--fs-base); transition: var(--transition); color: var(--text-primary); }
+        input[type="text"]:focus, input[type="number"]:focus, input[type="time"]:focus, select:focus { border-color: var(--accent); outline: none; }
+        
+        .toggle-label { display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-bottom: 16px; font-size: var(--fs-base); }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--surface-hover); border: 1px solid var(--border); transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: var(--text-secondary); transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); border-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(20px); background-color: #000; }
+
+        .btn-danger { background: rgba(229, 62, 62, 0.1); color: var(--breaking); border: 1px solid rgba(229, 62, 62, 0.3); padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: var(--transition); margin-top: 8px; }
+        .btn-danger:hover { background: rgba(229, 62, 62, 0.2); }
+        .btn-primary { background: var(--accent); color: #000; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+
+        /* Toast Notifications */
+        #toastContainer { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: rgba(20,20,20,0.9); backdrop-filter: blur(10px); border: 1px solid var(--border); border-left: 4px solid var(--accent); color: var(--text-primary); padding: 16px 24px; border-radius: 8px; font-size: var(--fs-base); font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.5); opacity: 0; transform: translateX(50px); transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; }
+        .toast.show { opacity: 1; transform: translateX(0); }
+        .toast.toast-error { border-left-color: var(--breaking); }
+        .toast.toast-error span.material-symbols-outlined { color: var(--breaking); }
+
+        .perm-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .perm-badge.granted {
+            background: rgba(46, 204, 113, 0.15);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+        .perm-badge.denied {
+            background: rgba(229, 62, 62, 0.15);
+            color: var(--breaking);
+            border: 1px solid rgba(229, 62, 62, 0.3);
+        }
+        .perm-badge.default {
+            background: rgba(200, 200, 200, 0.15);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        /* Confirm & About Dialog */
+        .confirm-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; display: flex; justify-content: center; align-items: center; opacity: 0; visibility: hidden; pointer-events: none; transition: var(--transition); }
+        .confirm-overlay.open { opacity: 1; visibility: visible; pointer-events: auto; }
+        .confirm-modal { background: var(--surface); padding: 32px; border-radius: var(--radius); border: 1px solid var(--border); max-width: 400px; text-align: center; }
+        .confirm-title { font-size: var(--fs-h3); font-weight: 600; margin-bottom: 16px; }
+        .confirm-actions { display: flex; justify-content: center; gap: 16px; margin-top: 24px; }
+        .btn-cancel { background: var(--surface-hover); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        
+        .about-modal { text-align: left; max-width: 500px; }
+        .about-title { font-family: var(--font-headline); font-size: 28px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary); }
+        .about-version { font-size: var(--fs-small); color: var(--accent); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; font-weight: 600; }
+        .about-desc { margin-bottom: 16px; color: var(--text-secondary); }
+
+        /* ============================================================
+           RESPONSIVE BREAKPOINTS
+           ============================================================ */
+
+        /* Tablet landscape */
+        @media (max-width: 1200px) {
+            .top-stories-grid { grid-template-columns: repeat(3, 1fr); }
+            .category-layout { grid-template-columns: 55% 1fr; }
+        }
+
+        /* Tablet portrait */
+        @media (max-width: 1024px) {
+            .top-stories-grid { grid-template-columns: repeat(2, 1fr); }
+            .category-layout { grid-template-columns: 1fr; }
+            .secondary-stories-col { flex-direction: row; flex-wrap: wrap; }
+            .secondary-stories-col .glass-card.horizontal { flex: 1 1 calc(50% - 6px); }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .top-stories-grid { grid-template-columns: 1fr; }
+            .category-layout { grid-template-columns: 1fr; }
+            .secondary-stories-col { flex-direction: column; }
+            .header { padding: 16px 20px; }
+            .header-left span#dateDisplay { display: none; }
+            .search-box { display: none; }
+            .modal { width: 100%; height: 100%; border-radius: 0; }
+            .modal-body { flex-direction: column; }
+            .settings-tabs { width: 100%; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; }
+            .settings-tab { border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
+            .settings-tab.active { border-bottom-color: var(--accent); }
+            .chat-container { padding: 20px; }
+            .glass-panel { padding: 20px; }
+            .hero-title { font-size: 28px; }
+            /* Allow horizontal card to be taller on small screens */
+            .glass-card.horizontal { flex-direction: column; }
+            .horizontal-img-wrap { width: 100%; height: 140px; }
+            .horizontal-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+            /* Featured card adjustments */
+            .featured-title { font-size: var(--fs-h2); }
+            /* Reduce summary clamp on mobile to save space */
+            .ai-summary-text { -webkit-line-clamp: 3; }
+            .fallback-summary-text { -webkit-line-clamp: 3; }
+            /* Char count can be smaller on mobile */
+            .ai-char-count { font-size: 9px; }
+        }
+
+        @media (max-width: 480px) {
+            .article-grid { grid-template-columns: 1fr; }
+            .top-stories-grid { grid-template-columns: 1fr; }
+            .card-img-top { height: 160px; }
+        }
+    </style>
 </head>
 <body>
+    <div id="toastContainer"></div>
 
-<aside class="sidebar">
-  <div class="brand">
-    <div class="brand-name">Nexus News</div>
-    <div class="brand-tag">Intelligence Briefing</div>
-  </div>
-  <nav id="navList"></nav>
-  <div class="sidebar-footer">
-    <button class="refresh-btn" id="refreshBtn" onclick="refreshNews()">
-      ↻ &nbsp;Refresh News
-    </button>
-  </div>
-</aside>
+    <!-- Hamburger Drawer -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+    <nav class="drawer" id="drawer">
+        <div class="drawer-header">
+            <div class="drawer-title">Nexus</div>
+            <span class="material-symbols-outlined drawer-close" onclick="closeDrawer()">close</span>
+        </div>
+        <div class="drawer-nav">
+            <div class="drawer-item active" id="nav_cat_all" onclick="filterCategory('', this, true)"><span class="material-symbols-outlined">list</span> All News</div>
+            <div class="drawer-item" id="nav_briefing" onclick="loadBriefing()"><span class="material-symbols-outlined">wb_sunny</span> Morning Briefing</div>
+            <div class="drawer-item" id="nav_breaking" onclick="loadBreaking()"><span class="material-symbols-outlined" style="color:var(--breaking);">notifications_active</span> Breaking News</div>
+            
+            <div class="drawer-divider"></div>
+            <div class="drawer-item" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; pointer-events: none;">Categories</div>
+            <div class="drawer-item" id="nav_cat_local" onclick="filterCategory('local', this, true)"><span class="material-symbols-outlined">location_on</span> Local</div>
+            <div class="drawer-item" id="nav_cat_national" onclick="filterCategory('national', this, true)"><span class="material-symbols-outlined">flag</span> National</div>
+            <div class="drawer-item" id="nav_cat_global" onclick="filterCategory('global', this, true)"><span class="material-symbols-outlined">public</span> Global</div>
+            <div class="drawer-item" id="nav_cat_technology" onclick="filterCategory('technology', this, true)"><span class="material-symbols-outlined">computer</span> Technology</div>
+            <div class="drawer-item" id="nav_cat_business" onclick="filterCategory('business', this, true)"><span class="material-symbols-outlined">trending_up</span> Business</div>
+            <div class="drawer-item" id="nav_cat_sports" onclick="filterCategory('sports', this, true)"><span class="material-symbols-outlined">sports_baseball</span> Sports</div>
+            
+            <div class="drawer-divider"></div>
+            <div class="drawer-item" onclick="openSettings()"><span class="material-symbols-outlined">settings</span> Settings</div>
+            <div class="drawer-item" onclick="openAbout()"><span class="material-symbols-outlined">info</span> About</div>
+        </div>
+    </nav>
 
-<div class="main">
-  <div class="topbar">
-    <div>
-      <div class="page-title" id="pageTitle">Intelligence Briefing</div>
-      <div class="page-sub" id="pageSub">Loading your briefing…</div>
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal" onclick="if(event.target===this) closeSettings()">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Settings</div>
+                <span class="material-symbols-outlined drawer-close" onclick="closeSettings()" title="Close">close</span>
+            </div>
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <div class="settings-tab active" onclick="switchSettingsTab('personalization', this)">Personalization</div>
+                    <div class="settings-tab" onclick="switchSettingsTab('news', this)">News Prefs</div>
+                    <div class="settings-tab" onclick="switchSettingsTab('ai', this)">AI Prefs</div>
+                    <div class="settings-tab" onclick="switchSettingsTab('notifications', this)">Notifications</div>
+                    <div class="settings-tab" onclick="switchSettingsTab('appearance', this)">Appearance</div>
+                    <div class="settings-tab" onclick="switchSettingsTab('privacy', this)">Privacy & Data</div>
+                </div>
+                <div class="settings-content">
+                    <div id="tab-personalization" class="settings-section active">
+                        <div class="setting-group">
+                            <label class="setting-label">City</label>
+                            <input type="text" id="setting_location_city" placeholder="e.g. Vijayawada" maxlength="100">
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">State / Region</label>
+                            <input type="text" id="setting_location_state" placeholder="e.g. Andhra Pradesh" maxlength="100">
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">Country</label>
+                            <input type="text" id="setting_location_country" placeholder="e.g. India" maxlength="100">
+                        </div>
+                        <label class="toggle-label">
+                            <span>Automatic Location Detection<div class="setting-desc" style="margin-bottom:0">Use automatic IP-based location. When disabled, your saved manual city above is used strictly.</div></span>
+                            <label class="switch"><input type="checkbox" id="setting_location_auto"><span class="slider"></span></label>
+                        </label>
+                        <label class="toggle-label" style="margin-top: 16px;">
+                            <span>Personalized Feed<div class="setting-desc" style="margin-bottom:0">Curate stories and recommendations based on your preferences.</div></span>
+                            <label class="switch"><input type="checkbox" id="setting_personalized_feed"><span class="slider"></span></label>
+                        </label>
+                    </div>
+                    <div id="tab-news" class="settings-section">
+                        <div class="setting-group">
+                            <label class="setting-label">Personalized Category Preferences</label>
+                            <div class="setting-desc">Toggle categories for personalized feed, morning briefing, and recommendations. (All categories remain accessible in the top navigation).</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+                                <label class="toggle-label" style="margin: 0; padding: 8px 12px; background: var(--surface-hover); border-radius: 8px;">
+                                    <span>Local</span>
+                                    <label class="switch"><input type="checkbox" id="setting_cat_local"><span class="slider"></span></label>
+                                </label>
+                                <label class="toggle-label" style="margin: 0; padding: 8px 12px; background: var(--surface-hover); border-radius: 8px;">
+                                    <span>National</span>
+                                    <label class="switch"><input type="checkbox" id="setting_cat_national"><span class="slider"></span></label>
+                                </label>
+                                <label class="toggle-label" style="margin: 0; padding: 8px 12px; background: var(--surface-hover); border-radius: 8px;">
+                                    <span>Global</span>
+                                    <label class="switch"><input type="checkbox" id="setting_cat_global"><span class="slider"></span></label>
+                                </label>
+                                <label class="toggle-label" style="margin: 0; padding: 8px 12px; background: var(--surface-hover); border-radius: 8px;">
+                                    <span>Technology</span>
+                                    <label class="switch"><input type="checkbox" id="setting_cat_technology"><span class="slider"></span></label>
+                                </label>
+                                <label class="toggle-label" style="margin: 0; padding: 8px 12px; background: var(--surface-hover); border-radius: 8px;">
+                                    <span>Business</span>
+                                    <label class="switch"><input type="checkbox" id="setting_cat_business"><span class="slider"></span></label>
+                                </label>
+                                <label class="toggle-label" style="margin: 0; padding: 8px 12px; background: var(--surface-hover); border-radius: 8px;">
+                                    <span>Sports</span>
+                                    <label class="switch"><input type="checkbox" id="setting_cat_sports"><span class="slider"></span></label>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="setting-group" style="margin-top: 24px;">
+                            <label class="setting-label">Article Limit (per page)</label>
+                            <div class="setting-desc">Number of articles to fetch per query (between 5 and 50).</div>
+                            <input type="number" id="setting_article_limit" min="5" max="50">
+                        </div>
+                        <label class="toggle-label">
+                            <span>Show Images in Feed</span>
+                            <label class="switch"><input type="checkbox" id="setting_show_images"><span class="slider"></span></label>
+                        </label>
+                        <label class="toggle-label">
+                            <span>Show Read Articles</span>
+                            <label class="switch"><input type="checkbox" id="setting_show_read_articles"><span class="slider"></span></label>
+                        </label>
+                    </div>
+                    <div id="tab-ai" class="settings-section">
+                        <label class="toggle-label" style="font-weight: 700; color: var(--accent);">
+                            <span>AI Features Master Toggle<div class="setting-desc" style="margin-bottom:0">If disabled, no AI provider is called, no AI syntheses are shown, and cleaned real article descriptions are used as fallback.</div></span>
+                            <label class="switch"><input type="checkbox" id="setting_ai_features"><span class="slider"></span></label>
+                        </label>
+                        <br>
+                        <label class="toggle-label">
+                            <span>AI Article Summarization<div class="setting-desc" style="margin-bottom:0">Generate concise AI syntheses for articles when AI features are active.</div></span>
+                            <label class="switch"><input type="checkbox" id="setting_ai_summarization"><span class="slider"></span></label>
+                        </label>
+                        <div class="setting-group" style="margin-top: 24px;">
+                            <label class="setting-label">Summary Length</label>
+                            <select id="setting_summary_length">
+                                <option value="short">Short (~150-250 characters)</option>
+                                <option value="medium">Medium (~350-450 characters)</option>
+                                <option value="detailed">Detailed (~450-500 characters)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="tab-notifications" class="settings-section">
+                        <div class="setting-group" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                            <div>
+                                <label class="setting-label" style="margin-bottom: 4px;">Browser Permission Status</label>
+                                <div class="setting-desc" style="margin-bottom: 0;">Permission state granted by your browser</div>
+                            </div>
+                            <span id="browserPermissionBadge" class="perm-badge default">default</span>
+                        </div>
+                        <div id="permDeniedNotice" class="setting-desc" style="color: var(--breaking); display: none; margin-bottom: 16px; background: rgba(229, 62, 62, 0.1); padding: 12px; border-radius: 8px;">
+                            Browser notifications are blocked in your browser settings. To enable alerts, allow notifications for this site in your browser URL bar.
+                        </div>
+                        <label class="toggle-label">
+                            <span>Enable Notifications<div class="setting-desc" style="margin-bottom:0">Enable browser notifications for news alerts</div></span>
+                            <label class="switch"><input type="checkbox" id="setting_notifications_enabled"><span class="slider"></span></label>
+                        </label>
+                        <label class="toggle-label">
+                            <span>Breaking News Alerts</span>
+                            <label class="switch"><input type="checkbox" id="setting_notify_breaking"><span class="slider"></span></label>
+                        </label>
+                        <label class="toggle-label">
+                            <span>Daily Briefing Notification</span>
+                            <label class="switch"><input type="checkbox" id="setting_notify_daily"><span class="slider"></span></label>
+                        </label>
+                        <div style="border-top: 1px solid var(--border); margin-top: 24px; padding-top: 20px;">
+                            <label class="toggle-label">
+                                <span>Quiet Hours<div class="setting-desc" style="margin-bottom:0">Suppress notifications during quiet hours (supports midnight crossing)</div></span>
+                                <label class="switch"><input type="checkbox" id="setting_quiet_hours_enabled"><span class="slider"></span></label>
+                            </label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px;">
+                                <div class="setting-group" style="margin-bottom: 0;">
+                                    <label class="setting-label" style="font-size: var(--fs-small);">Start Time</label>
+                                    <input type="time" id="setting_quiet_hours_start">
+                                </div>
+                                <div class="setting-group" style="margin-bottom: 0;">
+                                    <label class="setting-label" style="font-size: var(--fs-small);">End Time</label>
+                                    <input type="time" id="setting_quiet_hours_end">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tab-appearance" class="settings-section">
+                        <div class="setting-group">
+                            <label class="setting-label">Theme</label>
+                            <select id="setting_theme">
+                                <option value="dark">Dark Editorial (Default)</option>
+                                <option value="light">Light Editorial</option>
+                                <option value="system">System (Auto)</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">Font Size</label>
+                            <select id="setting_font_size">
+                                <option value="small">Small</option>
+                                <option value="medium">Medium</option>
+                                <option value="large">Large</option>
+                                <option value="xl">Extra Large</option>
+                            </select>
+                        </div>
+                        <div class="setting-group">
+                            <label class="setting-label">UI Density</label>
+                            <select id="setting_ui_density">
+                                <option value="comfortable">Comfortable</option>
+                                <option value="compact">Compact</option>
+                            </select>
+                        </div>
+                        <label class="toggle-label">
+                            <span>Enable Animations</span>
+                            <label class="switch"><input type="checkbox" id="setting_animations"><span class="slider"></span></label>
+                        </label>
+                    </div>
+                    <div id="tab-privacy" class="settings-section">
+                        <div class="setting-group">
+                            <label class="setting-label">Clear Cache</label>
+                            <div class="setting-desc">Clears cached AI summaries and reprocesses fresh content. Preserves all news articles, URLs, dates, categories, and saved preferences.</div>
+                            <button class="btn-danger" type="button" onclick="confirmAction('clear_cache')">Clear Cache</button>
+                        </div>
+                        <div class="setting-group" style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 32px;">
+                            <label class="setting-label" style="color: var(--breaking)">Reset Application Data</label>
+                            <div class="setting-desc">Clears user preferences and resets all settings to canonical defaults. Preserves all news articles, sources, and system configuration.</div>
+                            <button class="btn-danger" type="button" onclick="confirmAction('reset_settings')">Reset Application Data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; background: var(--surface);">
+                <button class="btn-cancel" type="button" onclick="closeSettings()">Cancel</button>
+                <button class="btn-primary" type="button" onclick="saveSettings()">Save Preferences</button>
+            </div>
+        </div>
     </div>
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="Search headlines…" oninput="handleSearch(this.value)"/>
+
+    <!-- Confirm Modal -->
+    <div class="confirm-overlay" id="confirmModal" onclick="if(event.target===this) closeConfirm()">
+        <div class="confirm-modal">
+            <div class="confirm-title" id="confirmTitle">Are you sure?</div>
+            <div class="confirm-desc" id="confirmDesc" style="color: var(--text-secondary); font-size: var(--fs-small); margin-bottom: 20px;"></div>
+            <div class="confirm-actions">
+                <button class="btn-cancel" type="button" onclick="closeConfirm()">Cancel</button>
+                <button class="btn-danger" type="button" id="confirmBtn">Confirm</button>
+            </div>
+        </div>
     </div>
-  </div>
-
-  <div class="progress-wrap" id="progressWrap">
-    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-    <div class="progress-label" id="progressLabel">Loading…</div>
-  </div>
-
-  <div class="feed" id="feed">
-    <div class="loading-state">
-      <div class="spinner"></div>
-      <p>Loading your briefing…</p>
+    
+    <!-- About Modal -->
+    <div class="confirm-overlay" id="aboutModal" onclick="if(event.target===this) closeAbout()">
+        <div class="confirm-modal about-modal">
+            <div class="about-title">NEXUS NEWS AGENT</div>
+            <div class="about-version">Version 1.1</div>
+            <div class="about-desc">A Professional Personal AI News Assistant.</div>
+            <div class="about-desc"><strong>News Sources:</strong> Google News, NewsAPI, and localized RSS feeds.</div>
+            <div class="about-desc"><strong>Freshness:</strong> Automatic startup refresh with intelligent caching and background synchronization.</div>
+            <div class="confirm-actions" style="justify-content: flex-end; margin-top: 24px;">
+                <button class="btn-cancel" onclick="closeAbout()">Close</button>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<script>
-const SERVER = "https://nexus-news-api-oncr.onrender.com";
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <span class="material-symbols-outlined" onclick="openDrawer()" title="Menu">menu</span>
+            <span id="dateDisplay"></span>
+            <div id="refreshStatusPill" class="refresh-pill" title="News Freshness Status">
+                <span class="dot"></span>
+                <span id="refreshStatusText">Checking news...</span>
+            </div>
+        </div>
+        <div class="logo" onclick="filterCategory('', null, false)">Nexus Daily</div>
+        <div class="header-right">
+            <div class="search-box">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" id="searchInput" placeholder="Search news...">
+            </div>
+            <button class="icon-btn" id="manualRefreshBtn" onclick="triggerRefresh(true)" title="Refresh News (Force)">
+                <span class="material-symbols-outlined" id="refreshIcon">refresh</span>
+            </button>
+            <button class="icon-btn" onclick="openSettings()" title="Settings">
+                <span class="material-symbols-outlined">settings</span>
+            </button>
+        </div>
+    </header>
 
-const NAV_ITEMS = [
-  {icon:"📰", label:"All News",   cat:""},
-  {icon:"🏏", label:"Sports",     cat:"sports"},
-  {icon:"💻", label:"Technology", cat:"technology"},
-  {icon:"📈", label:"Markets",    cat:"business"},
-  {icon:"🇮🇳", label:"India",     cat:"national"},
-  {icon:"🌍", label:"World",      cat:"global"},
-  {icon:"📍", label:"Local",      cat:"local"},
-];
+    <!-- Categories Tab Bar (Desktop) -->
+    <nav class="categories" id="topCategories">
+        <div class="cat-tab active" id="tab_cat_all" onclick="filterCategory('', this, false)">ALL</div>
+        <div class="cat-tab" id="tab_cat_local" onclick="filterCategory('local', this, false)">LOCAL</div>
+        <div class="cat-tab" id="tab_cat_national" onclick="filterCategory('national', this, false)">NATIONAL</div>
+        <div class="cat-tab" id="tab_cat_global" onclick="filterCategory('global', this, false)">GLOBAL</div>
+        <div class="cat-tab" id="tab_cat_technology" onclick="filterCategory('technology', this, false)">TECH</div>
+        <div class="cat-tab" id="tab_cat_business" onclick="filterCategory('business', this, false)">BUSINESS</div>
+        <div class="cat-tab" id="tab_cat_sports" onclick="filterCategory('sports', this, false)">SPORTS</div>
+    </nav>
 
-const CAT_COLORS = {
-  sports:"#15803d",technology:"#004ac6",business:"#b45309",
-  national:"#7c3aed",global:"#0369a1",local:"#dc2626",general:"#475569"
-};
-const CAT_LABELS = {
-  sports:"SPORTS",technology:"TECHNOLOGY",business:"MARKETS",
-  national:"INDIA",global:"WORLD",local:"LOCAL",general:"GENERAL"
-};
-const CAT_ICONS = {
-  sports:"🏏",technology:"💻",business:"📈",
-  national:"🇮🇳",global:"🌍",local:"📍",general:"📰"
-};
-const CAT_ORDER = ["local","national","global","sports","technology","business","general"];
+    <!-- Main Content -->
+    <main class="container" id="mainContainer">
+        <!-- Injected via JS -->
+    </main>
 
-let allArticles = [];
-let activecat = "";
-let searchQ = "";
-
-function buildNav(){
-  const nav = document.getElementById("navList");
-  nav.innerHTML = NAV_ITEMS.map((item,i) => `
-    <button class="nav-item ${i===0?'active':''}" onclick="setcat('${item.cat}')" data-cat="${item.cat}">
-      <span class="nav-icon">${item.icon}</span>
-      ${item.label}
-    </button>
-  `).join("");
-}
-
-function setcat(cat){
-  activecat = cat;
-  document.querySelectorAll(".nav-item").forEach(el => {
-    el.classList.toggle("active", el.dataset.cat === cat);
-  });
-  const titles = {
-    "":"Intelligence Briefing","sports":"🏏 Sports",
-    "technology":"💻 Technology","business":"📈 Markets",
-    "national":"🇮🇳 India","global":"🌍 World","local":"📍 Local"
-  };
-  document.getElementById("pageTitle").textContent = titles[cat] || "Intelligence Briefing";
-  renderFeed();
-}
-
-function handleSearch(val){
-  searchQ = val.toLowerCase();
-  renderFeed();
-}
-
-function getSentiment(text){
-  const t = text.toLowerCase();
-  const pos = ["wins","growth","surge","record","breakthrough","rally","gain","launch","rise","success"];
-  const neg = ["crash","fail","drop","war","conflict","crisis","loss","decline","struggle","strike","kill"];
-  if(pos.some(w=>t.includes(w))) return {cls:"s-pos",label:"↑ Optimistic"};
-  if(neg.some(w=>t.includes(w))) return {cls:"s-neg",label:"↓ Cautious"};
-  return {cls:"s-neu",label:"— Neutral"};
-}
-
-function buildCard(a){
-  const cat = a.category || "general";
-  const color = CAT_COLORS[cat] || "#475569";
-  const label = CAT_LABELS[cat] || cat.toUpperCase();
-  const summary = a.summary || a.description || "";
-  const sent = getSentiment((a.title||"") + " " + summary);
-  const url = a.url || "";
-  return `
-  <div class="article-card">
-    <div class="card-meta">
-      <span class="card-cat" style="color:${color}">${label}</span>
-      <span class="card-dot">•</span>
-      <span class="card-source">${a.source || "Unknown"}</span>
+    <!-- Chat Agent Interface -->
+    <div class="chat-container">
+        <div class="chat-agent-msg" id="agentMsg"></div>
+        <div class="chat-bar">
+            <input type="text" id="chatInput" placeholder="Ask me anything about the news...">
+            <button class="send-btn" onclick="sendChat()">
+                <span class="material-symbols-outlined" style="font-size: 20px;">arrow_upward</span>
+            </button>
+        </div>
     </div>
-    <div class="card-title">${a.title || "No title"}</div>
-    ${summary ? `
-    <div class="summary-box">
-      <div class="summary-tag">Nexus AI Synthesis</div>
-      <div class="summary-text">${summary}</div>
-    </div>` : ""}
-    <div class="card-footer">
-      <span class="sentiment ${sent.cls}">${sent.label}</span>
-      ${url ? `<a class="read-more" href="${url}" target="_blank" rel="noopener">Read More →</a>` : ""}
-    </div>
-  </div>`;
-}
 
-function renderFeed(){
-  let arts = [...allArticles];
-  if(activecat) arts = arts.filter(a => a.category === activecat);
-  if(searchQ)   arts = arts.filter(a =>
-    ((a.title||"") + " " + (a.summary||"") + " " + (a.description||"")).toLowerCase().includes(searchQ)
-  );
+    <script>
+        // State
+        let currentPage = 1;
+        let currentView = 'category'; // 'briefing' | 'breaking' | 'category' | 'search'
+        let currentCategory = '';
+        let currentSearch = '';
+        let isRefreshing = false;
+        let currentSettings = {};
+        let confirmCallback = null;
 
-  const now = new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-  document.getElementById("pageSub").textContent = `${arts.length} articles · ${now}`;
+        // Init Header Date
+        document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        
+        // --- STARTUP FLOW (Instant Cached Display + Background Freshness Check) ---
+        fetchSettings().then(() => {
+            // 1. Load cached news immediately (0 waiting time)
+            filterCategory('', document.getElementById('nav_cat_all'), false);
+            
+            // 2. Perform intelligent freshness check & auto-refresh in background
+            checkFreshnessAndAutoRefresh();
+        });
 
-  const feed = document.getElementById("feed");
-
-  if(!arts.length){
-    feed.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>No articles found</p></div>`;
-    return;
-  }
-
-  if(activecat){
-    feed.innerHTML = arts.map(buildCard).join("");
-    return;
-  }
-
-  const groups = {};
-  arts.forEach(a => {
-    const c = a.category || "general";
-    if(!groups[c]) groups[c] = [];
-    groups[c].push(a);
-  });
-
-  const sortedCats = Object.keys(groups).sort((a,b) => {
-    const ia = CAT_ORDER.indexOf(a), ib = CAT_ORDER.indexOf(b);
-    return (ia===-1?99:ia) - (ib===-1?99:ib);
-  });
-
-  let html = "";
-  sortedCats.forEach(cat => {
-    const color = CAT_COLORS[cat] || "#475569";
-    const icon  = CAT_ICONS[cat] || "📰";
-    const label = CAT_LABELS[cat] || cat.toUpperCase();
-    html += `<div class="cat-header" style="color:${color};background:${color}18">${icon}  ${label}</div>`;
-    html += groups[cat].slice(0,5).map(buildCard).join("");
-  });
-
-  feed.innerHTML = html;
-}
-
-function setProgress(pct, label){
-  const wrap = document.getElementById("progressWrap");
-  wrap.style.display = "block";
-  document.getElementById("progressFill").style.width = pct + "%";
-  document.getElementById("progressLabel").textContent = label;
-  if(pct >= 100) setTimeout(() => { wrap.style.display = "none"; }, 2000);
-}
-
-// ── Load news on page open ────────────────────────────────────────────────────
-async function loadNews(){
-  try {
-    setProgress(10, "Waking up server…");
-    document.getElementById("feed").innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Connecting to server…</p></div>`;
-
-    await fetch(`${SERVER}/`).catch(()=>{});
-    await new Promise(r => setTimeout(r, 3000));
-
-    setProgress(30, "Checking for fresh news…");
-    const status = await fetch(`${SERVER}/status`).then(r=>r.json()).catch(()=>({is_fresh:false}));
-
-    if(!status.is_fresh){
-      setProgress(50, "Fetching latest headlines… (2-3 min)");
-      fetch(`${SERVER}/fetch`, {method:"POST"}).catch(()=>{});
-
-      // Poll every 15s waiting for articles
-      let attempts = 0;
-      await new Promise((resolve) => {
-        const poll = setInterval(async () => {
-          attempts++;
-          setProgress(Math.min(50 + attempts * 4, 88), `Summarizing articles… (${attempts * 15}s)`);
-          try {
-            const d = await fetch(`${SERVER}/news`).then(r=>r.json());
-            if((d.articles||[]).length > 0){
-              clearInterval(poll);
-              allArticles = d.articles;
-              resolve();
+        // Search listener
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                currentSearch = this.value.trim();
+                currentView = 'search';
+                currentPage = 1;
+                clearActiveStates();
+                loadNews();
             }
-          } catch(e){}
-          if(attempts >= 20){ clearInterval(poll); resolve(); }
-        }, 15000);
-      });
-    } else {
-      setProgress(85, "Downloading articles…");
-      const data = await fetch(`${SERVER}/news`).then(r=>r.json());
-      allArticles = data.articles || [];
-    }
+        });
 
-    setProgress(100, `Loaded ${allArticles.length} articles`);
-    renderFeed();
-  } catch(e) {
-    document.getElementById("feed").innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">⚠️</div>
-        <p>Could not connect to server</p>
-        <p style="font-size:12px;margin-top:8px">Try refreshing the page</p>
-      </div>`;
-    document.getElementById("progressWrap").style.display = "none";
-  }
-}
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendChat();
+        });
 
-// ── Refresh button ────────────────────────────────────────────────────────────
-async function refreshNews(){
-  const btn = document.getElementById("refreshBtn");
-  btn.disabled = true;
-  btn.textContent = "Refreshing…";
-  document.getElementById("feed").innerHTML = `
-    <div class="loading-state">
-      <div class="spinner"></div>
-      <p>Fetching fresh news…<br>
-      <small style="color:var(--text-muted);font-size:12px">This takes 2-3 minutes. Please wait.</small></p>
-    </div>`;
+        // --- Settings & Appearance System ---
+        let systemThemeListener = null;
 
-  setProgress(10, "Connecting to server…");
+        function applyTheme(theme) {
+            const body = document.body;
+            body.classList.remove('theme-light', 'theme-dark');
 
-  try {
-    await fetch(`${SERVER}/`).catch(()=>{});
-    await new Promise(r => setTimeout(r, 2000));
+            if (systemThemeListener) {
+                const mql = window.matchMedia("(prefers-color-scheme: dark)");
+                if (mql.removeEventListener) {
+                    mql.removeEventListener('change', systemThemeListener);
+                } else if (mql.removeListener) {
+                    mql.removeListener(systemThemeListener);
+                }
+                systemThemeListener = null;
+            }
 
-    setProgress(20, "Triggering news fetch…");
-    fetch(`${SERVER}/fetch`, {method:"POST"}).catch(()=>{});
-
-    // Poll every 15s
-    let attempts = 0;
-    const maxAttempts = 16;
-
-    await new Promise((resolve) => {
-      const poll = setInterval(async () => {
-        attempts++;
-        const pct = Math.min(20 + attempts * 4, 90);
-        setProgress(pct, `Summarizing with AI… (${attempts * 15}s elapsed)`);
-
-        try {
-          const data = await fetch(`${SERVER}/news`).then(r=>r.json());
-          const arts = data.articles || [];
-          if(arts.length > 0){
-            clearInterval(poll);
-            allArticles = arts;
-            resolve();
-          }
-        } catch(e){}
-
-        if(attempts >= maxAttempts){
-          clearInterval(poll);
-          resolve();
+            if (theme === 'system') {
+                const mql = window.matchMedia("(prefers-color-scheme: dark)");
+                const applySys = (matches) => {
+                    body.classList.remove('theme-light', 'theme-dark');
+                    body.classList.add(matches ? 'theme-dark' : 'theme-light');
+                };
+                applySys(mql.matches);
+                systemThemeListener = (e) => applySys(e.matches);
+                if (mql.addEventListener) {
+                    mql.addEventListener('change', systemThemeListener);
+                } else if (mql.addListener) {
+                    mql.addListener(systemThemeListener);
+                }
+            } else if (theme === 'light') {
+                body.classList.add('theme-light');
+            } else {
+                body.classList.add('theme-dark');
+            }
         }
-      }, 15000);
-    });
 
-    setProgress(100, `Loaded ${allArticles.length} fresh articles`);
-    renderFeed();
+        function applyAppearanceSettings() {
+            const body = document.body;
+            applyTheme(currentSettings.theme || 'dark');
+            
+            body.classList.remove('font-small', 'font-medium', 'font-large', 'font-xl');
+            body.classList.add(`font-${currentSettings.font_size || 'medium'}`);
+            
+            body.classList.remove('density-compact', 'density-comfortable');
+            body.classList.add(`density-${currentSettings.ui_density || 'comfortable'}`);
+            
+            if (currentSettings.animations === false) {
+                body.classList.add('anim-off');
+            } else {
+                body.classList.remove('anim-off');
+            }
+        }
 
-  } catch(e) {
-    document.getElementById("feed").innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">⚠️</div>
-        <p>Refresh failed. Try again.</p>
-      </div>`;
-    document.getElementById("progressWrap").style.display = "none";
-  }
+        async function fetchSettings() {
+            try {
+                const res = await fetch('/settings', { cache: 'no-store' });
+                if (!res.ok) throw new Error("Settings fetch failed");
+                const json = await res.json();
+                currentSettings = (json.data !== undefined) ? json.data : json;
+                applyAppearanceSettings();
+            } catch (e) {
+                console.error("Failed to fetch settings", e);
+                showToast("Could not load settings from server", true);
+            }
+        }
 
-  btn.disabled = false;
-  btn.innerHTML = "↻ &nbsp;Refresh News";
-}
+        function updateNotificationPermissionUI() {
+            const permBadge = document.getElementById('browserPermissionBadge');
+            const deniedNotice = document.getElementById('permDeniedNotice');
+            const masterToggle = document.getElementById('setting_notifications_enabled');
+            
+            if (!("Notification" in window)) {
+                if (permBadge) {
+                    permBadge.textContent = "unsupported";
+                    permBadge.className = "perm-badge denied";
+                }
+                if (masterToggle) masterToggle.disabled = true;
+                return;
+            }
+            
+            const perm = Notification.permission;
+            if (permBadge) {
+                permBadge.textContent = perm;
+                permBadge.className = `perm-badge ${perm}`;
+            }
+            
+            if (perm === 'denied') {
+                if (deniedNotice) deniedNotice.style.display = 'block';
+                if (masterToggle) masterToggle.checked = false;
+            } else {
+                if (deniedNotice) deniedNotice.style.display = 'none';
+            }
+        }
 
-buildNav();
-loadNews();
-</script>
+        async function onNotificationToggleChange(e) {
+            if (!("Notification" in window)) {
+                showToast("Browser notifications are not supported in this environment.", true);
+                e.target.checked = false;
+                return;
+            }
+            
+            if (e.target.checked) {
+                if (Notification.permission === 'denied') {
+                    e.target.checked = false;
+                    showToast("Notifications are blocked in your browser settings. Please allow them in your browser URL bar.", true);
+                    updateNotificationPermissionUI();
+                    return;
+                }
+                
+                if (Notification.permission === 'default') {
+                    try {
+                        const res = await Notification.requestPermission();
+                        updateNotificationPermissionUI();
+                        if (res !== 'granted') {
+                            e.target.checked = false;
+                            showToast("Notification permission was not granted.", true);
+                        } else {
+                            showToast("Browser notification permission granted!");
+                        }
+                    } catch (err) {
+                        e.target.checked = false;
+                        updateNotificationPermissionUI();
+                    }
+                }
+            }
+            updateNotificationPermissionUI();
+        }
+
+        function isTimeInQuietHours(startTime, endTime) {
+            if (!startTime || !endTime) return false;
+            const now = new Date();
+            const currentMins = now.getHours() * 60 + now.getMinutes();
+            const [sH, sM] = startTime.split(':').map(Number);
+            const [eH, eM] = endTime.split(':').map(Number);
+            const startMins = sH * 60 + sM;
+            const endMins = eH * 60 + eM;
+            if (startMins <= endMins) {
+                return currentMins >= startMins && currentMins < endMins;
+            } else {
+                return currentMins >= startMins || currentMins < endMins;
+            }
+        }
+
+        function sendBrowserNotification(title, options = {}) {
+            if (currentSettings.notifications_enabled !== true) return false;
+            if (!("Notification" in window) || Notification.permission !== 'granted') return false;
+            if (currentSettings.quiet_hours_enabled) {
+                if (isTimeInQuietHours(currentSettings.quiet_hours_start, currentSettings.quiet_hours_end)) {
+                    console.log("Notification suppressed due to quiet hours.");
+                    return false;
+                }
+            }
+            try {
+                return new Notification(title, {
+                    icon: '/favicon.ico',
+                    badge: '/favicon.ico',
+                    ...options
+                });
+            } catch (e) {
+                console.error("Failed to show notification", e);
+                return false;
+            }
+        }
+
+        function populateSettingsModal() {
+            // Personalization
+            document.getElementById('setting_location_city').value = currentSettings.location_city || '';
+            document.getElementById('setting_location_state').value = currentSettings.location_state || '';
+            document.getElementById('setting_location_country').value = currentSettings.location_country || '';
+            document.getElementById('setting_location_auto').checked = currentSettings.location_auto !== false;
+            document.getElementById('setting_personalized_feed').checked = currentSettings.personalized_feed !== false;
+
+            // News
+            document.getElementById('setting_cat_local').checked = currentSettings.cat_local !== false;
+            document.getElementById('setting_cat_national').checked = currentSettings.cat_national !== false;
+            document.getElementById('setting_cat_global').checked = currentSettings.cat_global !== false;
+            document.getElementById('setting_cat_technology').checked = currentSettings.cat_technology !== false;
+            document.getElementById('setting_cat_business').checked = currentSettings.cat_business !== false;
+            document.getElementById('setting_cat_sports').checked = currentSettings.cat_sports !== false;
+            document.getElementById('setting_article_limit').value = currentSettings.article_limit || 20;
+            document.getElementById('setting_show_images').checked = currentSettings.show_images !== false;
+            document.getElementById('setting_show_read_articles').checked = currentSettings.show_read_articles === true;
+
+            // AI
+            document.getElementById('setting_ai_features').checked = currentSettings.ai_features !== false;
+            document.getElementById('setting_ai_summarization').checked = currentSettings.ai_summarization !== false;
+            document.getElementById('setting_summary_length').value = currentSettings.summary_length || 'medium';
+
+            // Notifications
+            const hasPerm = ("Notification" in window) && Notification.permission === 'granted';
+            document.getElementById('setting_notifications_enabled').checked = (currentSettings.notifications_enabled === true) && hasPerm;
+            document.getElementById('setting_notify_breaking').checked = currentSettings.notify_breaking !== false;
+            document.getElementById('setting_notify_daily').checked = currentSettings.notify_daily !== false;
+            document.getElementById('setting_quiet_hours_enabled').checked = currentSettings.quiet_hours_enabled === true;
+            document.getElementById('setting_quiet_hours_start').value = currentSettings.quiet_hours_start || '22:00';
+            document.getElementById('setting_quiet_hours_end').value = currentSettings.quiet_hours_end || '07:00';
+            updateNotificationPermissionUI();
+
+            // Appearance
+            document.getElementById('setting_theme').value = currentSettings.theme || 'dark';
+            document.getElementById('setting_font_size').value = currentSettings.font_size || 'medium';
+            document.getElementById('setting_ui_density').value = currentSettings.ui_density || 'comfortable';
+            document.getElementById('setting_animations').checked = currentSettings.animations !== false;
+        }
+
+        // Live Appearance Preview Listeners
+        document.getElementById('setting_theme').addEventListener('change', (e) => {
+            applyTheme(e.target.value);
+        });
+        document.getElementById('setting_font_size').addEventListener('change', (e) => {
+            document.body.classList.remove('font-small', 'font-medium', 'font-large', 'font-xl');
+            document.body.classList.add(`font-${e.target.value}`);
+        });
+        document.getElementById('setting_ui_density').addEventListener('change', (e) => {
+            document.body.classList.remove('density-compact', 'density-comfortable');
+            document.body.classList.add(`density-${e.target.value}`);
+        });
+        document.getElementById('setting_animations').addEventListener('change', (e) => {
+            if (!e.target.checked) {
+                document.body.classList.add('anim-off');
+            } else {
+                document.body.classList.remove('anim-off');
+            }
+        });
+        document.getElementById('setting_notifications_enabled').addEventListener('change', onNotificationToggleChange);
+
+        async function saveSettings() {
+            const city = document.getElementById('setting_location_city').value.trim();
+            const state = document.getElementById('setting_location_state').value.trim();
+            const country = document.getElementById('setting_location_country').value.trim();
+            const locationAuto = document.getElementById('setting_location_auto').checked;
+            const personalizedFeed = document.getElementById('setting_personalized_feed').checked;
+
+            if (!locationAuto && !city) {
+                showToast("City is required when automatic location detection is disabled.", true);
+                switchSettingsTab('personalization', document.querySelector('.settings-tab'));
+                document.getElementById('setting_location_city').focus();
+                return;
+            }
+
+            const limit = parseInt(document.getElementById('setting_article_limit').value, 10);
+            if (isNaN(limit) || limit < 5 || limit > 50) {
+                showToast("Article limit must be an integer between 5 and 50.", true);
+                document.getElementById('setting_article_limit').focus();
+                return;
+            }
+
+            const payload = {
+                location_city: city,
+                location_state: state,
+                location_country: country,
+                location_auto: locationAuto,
+                personalized_feed: personalizedFeed,
+                cat_local: document.getElementById('setting_cat_local').checked,
+                cat_national: document.getElementById('setting_cat_national').checked,
+                cat_global: document.getElementById('setting_cat_global').checked,
+                cat_technology: document.getElementById('setting_cat_technology').checked,
+                cat_business: document.getElementById('setting_cat_business').checked,
+                cat_sports: document.getElementById('setting_cat_sports').checked,
+                article_limit: limit,
+                show_images: document.getElementById('setting_show_images').checked,
+                show_read_articles: document.getElementById('setting_show_read_articles').checked,
+                ai_features: document.getElementById('setting_ai_features').checked,
+                ai_summarization: document.getElementById('setting_ai_summarization').checked,
+                summary_length: document.getElementById('setting_summary_length').value,
+                notifications_enabled: document.getElementById('setting_notifications_enabled').checked,
+                notify_breaking: document.getElementById('setting_notify_breaking').checked,
+                notify_daily: document.getElementById('setting_notify_daily').checked,
+                quiet_hours_enabled: document.getElementById('setting_quiet_hours_enabled').checked,
+                quiet_hours_start: document.getElementById('setting_quiet_hours_start').value,
+                quiet_hours_end: document.getElementById('setting_quiet_hours_end').value,
+                theme: document.getElementById('setting_theme').value,
+                font_size: document.getElementById('setting_font_size').value,
+                ui_density: document.getElementById('setting_ui_density').value,
+                animations: document.getElementById('setting_animations').checked,
+                settings_version: currentSettings.settings_version || 1
+            };
+
+            try {
+                const res = await fetch('/settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload),
+                    cache: 'no-store'
+                });
+                const result = await res.json();
+                
+                if (!res.ok || result.status === 'error') {
+                    let errorMsg = result.message || "Invalid settings provided";
+                    if (result.errors) {
+                        const firstKey = Object.keys(result.errors)[0];
+                        errorMsg = `${firstKey}: ${result.errors[firstKey]}`;
+                    }
+                    showToast(errorMsg, true);
+                    return;
+                }
+
+                currentSettings = result.data || payload;
+                applyAppearanceSettings();
+                showToast("Settings saved successfully!");
+                closeSettings();
+                reloadCurrentView(true);
+            } catch (err) {
+                console.error("Save settings error", err);
+                showToast("Failed to save settings: Network error", true);
+            }
+        }
+
+        function openDrawer() { document.getElementById('drawer').classList.add('open'); document.getElementById('drawerOverlay').classList.add('open'); }
+        function closeDrawer() { document.getElementById('drawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open'); }
+        
+        function openSettings() {
+            closeDrawer();
+            populateSettingsModal();
+            document.body.style.overflow = 'hidden';
+            document.getElementById('settingsModal').classList.add('open');
+        }
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('open');
+            document.body.style.overflow = '';
+            applyAppearanceSettings();
+        }
+        
+        function switchSettingsTab(tab, el) {
+            document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+            const targetSec = document.getElementById(`tab-${tab}`);
+            if (targetSec) targetSec.classList.add('active');
+            if (el) el.classList.add('active');
+        }
+
+        function confirmAction(actionType) {
+            const modal = document.getElementById('confirmModal');
+            const title = document.getElementById('confirmTitle');
+            const desc = document.getElementById('confirmDesc');
+            
+            if (actionType === 'clear_cache') {
+                title.textContent = "Clear Summary Cache?";
+                desc.textContent = "This will remove cached article summaries. All news articles, URLs, dates, categories, and your settings will be preserved.";
+                confirmCallback = async () => {
+                    try {
+                        const res = await fetch('/data/clear_cache', { method: 'POST', cache: 'no-store' });
+                        const json = await res.json();
+                        closeConfirm();
+                        showToast(json.message || "Cache cleared successfully.");
+                        reloadCurrentView(false);
+                    } catch (err) {
+                        closeConfirm();
+                        showToast("Failed to clear cache.", true);
+                    }
+                };
+            } else if (actionType === 'reset_settings') {
+                title.textContent = "Reset Application Data?";
+                desc.textContent = "All settings will be restored to canonical defaults and preferences cleared. News articles will NOT be deleted.";
+                confirmCallback = async () => {
+                    try {
+                        const res = await fetch('/data/reset', { method: 'POST', cache: 'no-store' });
+                        const json = await res.json();
+                        try {
+                            localStorage.clear();
+                            sessionStorage.clear();
+                        } catch(e) {}
+                        closeConfirm();
+                        if (json.data) {
+                            currentSettings = json.data;
+                        }
+                        applyAppearanceSettings();
+                        populateSettingsModal();
+                        showToast("All settings restored to defaults.");
+                        reloadCurrentView(false);
+                    } catch (err) {
+                        closeConfirm();
+                        showToast("Failed to reset application data.", true);
+                    }
+                };
+            }
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeConfirm() {
+            document.getElementById('confirmModal').classList.remove('open');
+            document.body.style.overflow = '';
+            confirmCallback = null;
+        }
+        document.getElementById('confirmBtn').addEventListener('click', () => { if(confirmCallback) confirmCallback(); });
+
+        function openAbout() { closeDrawer(); document.body.style.overflow = 'hidden'; document.getElementById('aboutModal').classList.add('open'); }
+        function closeAbout() { document.getElementById('aboutModal').classList.remove('open'); document.body.style.overflow = ''; }
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAbout(); closeConfirm(); closeSettings(); } });
+
+        function showToast(message, isError = false) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = isError ? 'toast toast-error' : 'toast';
+            const icon = isError ? 'error' : 'info';
+            toast.innerHTML = `<span class="material-symbols-outlined">${icon}</span> <span>${message}</span>`;
+            container.appendChild(toast);
+            void toast.offsetWidth;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 4500);
+        }
+
+        // --- View State & Navigation ---
+        function clearActiveStates() {
+            document.querySelectorAll('.drawer-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.cat-tab').forEach(el => el.classList.remove('active'));
+        }
+        
+        function setMainLoading(text) {
+            document.getElementById('mainContainer').innerHTML = `<div class="state-msg"><span class="material-symbols-outlined" style="animation: pulse 1.5s infinite;">hourglass_empty</span><br>${text}</div>`;
+        }
+        
+        function setMainError(text) {
+            document.getElementById('mainContainer').innerHTML = `
+                <div class="error-msg">
+                    <span class="material-symbols-outlined" style="font-size: 32px">error_outline</span><br>${text}
+                    <br><button class="btn-retry" onclick="reloadCurrentView(false)">Try Again</button>
+                </div>
+            `;
+        }
+        function setMainEmpty(text) {
+            document.getElementById('mainContainer').innerHTML = `<div class="state-msg" style="color: var(--accent);"><span class="material-symbols-outlined" style="font-size: 32px">inbox</span><br>${text}</div>`;
+        }
+
+        function truncateText(text, length = 500) {
+            if (!text) return "";
+            if (text.length <= length) return text;
+            let candidate = text.substring(0, length);
+            let lastSpace = candidate.lastIndexOf(' ');
+            if (lastSpace > length * 0.6) {
+                return candidate.substring(0, lastSpace).trim() + "...";
+            }
+            return candidate.substring(0, length - 3).trim() + "...";
+        }
+
+        function formatRelativeTime(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return '';
+                const diffMs = Date.now() - d.getTime();
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMins / 60);
+                const diffDays = Math.floor(diffHours / 24);
+                
+                if (diffMins < 1) return 'Just now';
+                if (diffMins < 60) return `${diffMins}m ago`;
+                if (diffHours < 24) return `${diffHours}h ago`;
+                if (diffDays < 7) return `${diffDays}d ago`;
+                return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            } catch (e) {
+                return '';
+            }
+        }
+
+        // --- Article Layout Generators ---
+        function isValidArticleDescription(desc, title) {
+            if (!desc || desc.trim() === '') return false;
+            if (desc === title) return false;
+            
+            const lowerDesc = desc.toLowerCase();
+            const boilerplateKeywords = [
+                'subscribe', 'sign in', 'login', 'read more', 'continue reading',
+                'cookie', 'privacy', 'newsletter', 'advertisement', 'sponsored',
+                'download our app', 'share this'
+            ];
+            for (let word of boilerplateKeywords) {
+                if (lowerDesc.includes(word)) return false;
+            }
+            
+            return true;
+        }
+
+        function getSourceInitials(source) {
+            if (!source) return 'N';
+            const words = source.trim().split(' ').filter(w => w.length > 0);
+            if (words.length === 1) {
+                return words[0].substring(0, 2).toUpperCase();
+            }
+            return (words[0][0] + words[1][0]).toUpperCase();
+        }
+
+        function getArticleSummaryHtml(article) {
+            const UNAVAILABLE = 'Summary unavailable for this article.';
+            const aiEnabled = (currentSettings.ai_features !== false) && (currentSettings.ai_summarization !== false);
+
+            const rawSummary = (article.summary || '').trim();
+            const isAi      = article.is_ai_summary === true;
+            const hasRealSummary = rawSummary !== '' && rawSummary !== UNAVAILABLE;
+
+            // --- Case 1: Valid AI-generated summary (backend set is_ai_summary=true) ---
+            if (isAi && hasRealSummary) {
+                const text = truncateText(rawSummary, 500);
+                return `
+                <div class="ai-summary">
+                    <div class="ai-summary-label">
+                        <span class="ai-summary-label-left"><span class="material-symbols-outlined" style="font-size:13px;line-height:1">auto_awesome</span>&thinsp;&#10022; NEXUS AI SYNTHESIS</span>
+                        <span class="ai-char-count">~${text.length}c</span>
+                    </div>
+                    <div class="ai-summary-text">${text}</div>
+                </div>`;
+            }
+
+            // --- Case 2: Extractive/fallback summary (backend set is_ai_summary=false) ---
+            // The backend already cleaned and extracted this from real article content.
+            // Trust it — do NOT run isValidArticleDescription on it again.
+            if (!isAi && hasRealSummary) {
+                const text = truncateText(rawSummary, 500);
+                // Style similarly to AI synthesis but with a subtle label difference
+                return `
+                <div class="ai-summary ai-summary--extractive">
+                    <div class="ai-summary-label">
+                        <span class="ai-summary-label-left"><span class="material-symbols-outlined" style="font-size:13px;line-height:1">summarize</span>&thinsp;NEXUS SYNTHESIS</span>
+                        <span class="ai-char-count">~${text.length}c</span>
+                    </div>
+                    <div class="ai-summary-text">${text}</div>
+                </div>`;
+            }
+
+            // --- Case 3: AI disabled but we have a summary from description in the article ---
+            // Try the raw description as a last resort before showing unavailable
+            if (!hasRealSummary) {
+                const descFallback = (article.description || '').trim();
+                if (descFallback && isValidArticleDescription(descFallback, article.title)) {
+                    const text = truncateText(descFallback, 500);
+                    return `
+                    <div class="ai-summary ai-summary--extractive">
+                        <div class="ai-summary-label">
+                            <span class="ai-summary-label-left"><span class="material-symbols-outlined" style="font-size:13px;line-height:1">article</span>&thinsp;NEXUS SYNTHESIS</span>
+                            <span class="ai-char-count">~${text.length}c</span>
+                        </div>
+                        <div class="ai-summary-text">${text}</div>
+                    </div>`;
+                }
+            }
+
+            // --- Case 4: Truly nothing available ---
+            return `<div class="summary-unavailable">Summary unavailable for this article.</div>`;
+        }
+
+        function renderCardFooter(a) {
+            let pubDateStr = a.published_at || a.published || a.created_at;
+            let timeAgo = formatRelativeTime(pubDateStr);
+            let metaTime = timeAgo ? ` · ${timeAgo}` : '';
+            let sourceName = a.source || 'Nexus News';
+            let initials = getSourceInitials(sourceName);
+            
+            return `
+            <div class="card-footer">
+                <div class="source-info">
+                    <div class="source-badge">${initials}</div>
+                    <span class="source-name">${sourceName}${metaTime}</span>
+                </div>
+                <div class="card-actions">
+                    <span class="material-symbols-outlined" onclick="event.preventDefault();" title="Bookmark">bookmark_border</span>
+                    <span class="material-symbols-outlined" onclick="event.preventDefault();" title="Share">share</span>
+                </div>
+            </div>`;
+        }
+
+        function renderArticleCard(a, showImg) {
+            // Image (flush, no border-radius — the card-img-wrap clips it)
+            let imgHtml = (a.image_url && showImg)
+                ? `<div class="card-img-wrap"><img src="${a.image_url}" class="card-img-top" alt="" onerror="this.parentElement.style.display='none'"></div>`
+                : '';
+
+            let breaking = a.is_breaking
+                ? `<div class="breaking-badge"><div class="breaking-dot"></div> BREAKING</div>`
+                : '';
+
+            let pubDateStr = a.published_at || a.published || a.created_at;
+            let timeAgo = formatRelativeTime(pubDateStr);
+
+            // Context description logic
+            const aiEnabled = (currentSettings.ai_features !== false) && (currentSettings.ai_summarization !== false);
+            const isAi = a.is_ai_summary === true;
+            const hasAiSummary = aiEnabled && isAi && a.summary && a.summary.trim() !== '' && a.summary !== 'Summary unavailable for this article.';
+
+            // Show context only when it adds value beyond what AI summary already says
+            let contextHtml = '';
+            if (!hasAiSummary && isValidArticleDescription(a.description, a.title)) {
+                // No AI summary — description is shown inside the summary box itself (handled by getArticleSummaryHtml)
+                // so don't double-render here
+            } else if (hasAiSummary && isValidArticleDescription(a.description, a.title)) {
+                // Only show description as context if it's meaningfully different from the AI summary
+                const descPreview = a.description.substring(0, 80).toLowerCase();
+                const summPreview = a.summary.substring(0, 80).toLowerCase();
+                if (!summPreview.includes(descPreview.substring(0, 40)) && !descPreview.includes(summPreview.substring(0, 40))) {
+                    contextHtml = `<div class="article-context">${truncateText(a.description, 160)}</div>`;
+                }
+            }
+
+            const summaryHtml = getArticleSummaryHtml(a);
+
+            return `
+                <a href="${a.url}" target="_blank" class="glass-card">
+                    ${imgHtml}
+                    <div class="card-body">
+                        <div class="card-category-time">
+                            <span>${a.category || 'General'}</span>
+                            <span>${timeAgo}</span>
+                        </div>
+                        ${breaking}
+                        <h3 class="card-title">${a.title}</h3>
+                        ${contextHtml}
+                        <div class="card-summary-zone">${summaryHtml}</div>
+                        ${renderCardFooter(a)}
+                    </div>
+                </a>
+            `;
+        }
+
+        // --- Views ---
+        async function loadBriefing(silent = false) {
+            currentView = 'briefing';
+            closeDrawer(); clearActiveStates();
+            const nav = document.getElementById('nav_briefing');
+            if (nav) nav.classList.add('active');
+            
+            if (!silent) setMainLoading("Preparing your morning briefing...");
+            
+            try {
+                const res = await fetch('/briefing', { cache: 'no-store' });
+                if (!res.ok) throw new Error("HTTP error");
+                const json = await res.json();
+                
+                if (!json.data || !json.data.articles || json.data.articles.length === 0) {
+                    setMainEmpty("Your briefing isn't ready yet. Refresh news to generate today's briefing."); return;
+                }
+                
+                const showImg = currentSettings.show_images !== false;
+                let topStories = json.data.articles.slice(0, 4);
+                let generalStories = json.data.articles.slice(4);
+                
+                let html = `
+                    <div class="glass-panel">
+                        <h1 class="hero-title">Morning Briefing</h1>
+                        <div style="font-size: var(--fs-large); line-height: 1.8; white-space: pre-wrap;">${json.data.greeting || ''}</div>
+                    </div>
+                    
+                    <div class="section-title">Today's Key Stories</div>
+                    <div class="top-stories-grid">
+                        ${topStories.map(a => renderArticleCard(a, showImg)).join('')}
+                    </div>
+                    
+                    ${generalStories.length > 0 ? `
+                        <div class="section-title" style="margin-top: 40px;">Category Highlights</div>
+                        <div class="article-grid">
+                         ${generalStories.map(a => renderArticleCard(a, showImg)).join('')}
+                        </div>
+                    ` : ''}
+                `;
+                document.getElementById('mainContainer').innerHTML = html;
+            } catch(e) { 
+                if (!silent) setMainError("Unable to load Morning Briefing right now."); 
+            }
+        }
+
+        async function loadBreaking(silent = false) {
+            currentView = 'breaking';
+            closeDrawer(); clearActiveStates();
+            const nav = document.getElementById('nav_breaking');
+            if (nav) nav.classList.add('active');
+            
+            if (!silent) setMainLoading("Checking for breaking news...");
+            
+            try {
+                const res = await fetch('/breaking', { cache: 'no-store' });
+                if (!res.ok) throw new Error("HTTP error");
+                const json = await res.json();
+                
+                if (!json.data || json.data.length === 0) {
+                    setMainEmpty("No breaking news right now."); return;
+                }
+                
+                const showImg = currentSettings.show_images !== false;
+                
+                let html = `
+                    <div class="glass-panel breaking-panel">
+                        <div class="breaking-badge" style="font-size: 16px;"><div class="breaking-dot"></div> LIVE / BREAKING</div>
+                        <h1 class="hero-title" style="margin-bottom: 0;">Breaking News</h1>
+                    </div>
+                    
+                    <div class="article-grid">
+                        ${json.data.map(a => renderArticleCard(a, showImg)).join('')}
+                    </div>
+                `;
+                document.getElementById('mainContainer').innerHTML = html;
+            } catch(e) { 
+                if (!silent) setMainError("Unable to load breaking news right now."); 
+            }
+        }
+
+        function filterCategory(cat, el, fromDrawer) {
+            currentView = 'category';
+            closeDrawer(); clearActiveStates();
+            currentCategory = cat; currentSearch = ''; document.getElementById('searchInput').value = ''; currentPage = 1;
+            
+            if (fromDrawer && el) el.classList.add('active');
+            let topId = cat === '' ? 'tab_cat_all' : `tab_cat_${cat}`;
+            let topEl = document.getElementById(topId);
+            if (topEl) topEl.classList.add('active');
+            
+            setMainLoading("Loading stories...");
+            loadNews();
+        }
+
+        let renderedUrls = new Set();
+
+        function renderFeaturedArticle(a, showImg) {
+            const imgHtml = (a.image_url && showImg)
+                ? `<div class="featured-img-wrap"><img src="${a.image_url}" class="featured-img" alt="" onerror="this.parentElement.style.display='none'"></div>`
+                : '';
+
+            let pubDateStr = a.published_at || a.published || a.created_at;
+            let timeAgo = formatRelativeTime(pubDateStr);
+
+            const aiEnabled = (currentSettings.ai_features !== false) && (currentSettings.ai_summarization !== false);
+            const isAi = a.is_ai_summary === true;
+            const hasAiSummary = aiEnabled && isAi && a.summary && a.summary.trim() !== '' && a.summary !== 'Summary unavailable for this article.';
+
+            let contextHtml = '';
+            if (isValidArticleDescription(a.description, a.title)) {
+                // For featured card: show description as context regardless (it's a larger card)
+                // But skip if it's near-identical to the AI summary first 40 chars
+                const shouldSkip = hasAiSummary && a.description.toLowerCase().includes(a.summary.substring(0, 40).toLowerCase());
+                if (!shouldSkip) {
+                    contextHtml = `<div class="featured-context">${truncateText(a.description, 280)}</div>`;
+                }
+            }
+
+            return `
+                <div class="featured-story-card" onclick="window.open('${a.url}', '_blank')">
+                    <div class="card-category-time" style="flex-shrink:0;">
+                        <span>${a.category || 'General'}</span>
+                        <span>${timeAgo}</span>
+                    </div>
+                    <h2 class="featured-title">${a.title}</h2>
+                    ${contextHtml}
+                    ${imgHtml}
+                    <div class="featured-summary-zone">${getArticleSummaryHtml(a)}</div>
+                    <div class="featured-actions">
+                        ${renderCardFooter(a).replace('<div class="card-footer">', '<div class="card-footer" style="flex:1;margin-top:0;padding-top:0;border-top:none;">')}
+                        <a href="${a.url}" target="_blank" class="read-full-link" onclick="event.stopPropagation();">Read More &rarr;</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderSecondaryArticle(a, showImg) {
+            const imgHtml = (a.image_url && showImg)
+                ? `<div class="horizontal-img-wrap"><img src="${a.image_url}" alt="" onerror="this.parentElement.style.display='none'"></div>`
+                : '';
+
+            let pubDateStr = a.published_at || a.published || a.created_at;
+            let timeAgo = formatRelativeTime(pubDateStr);
+
+            return `
+                <a href="${a.url}" target="_blank" class="glass-card horizontal">
+                    ${imgHtml}
+                    <div class="horizontal-content">
+                        <div class="card-category-time">
+                            <span>${a.category || 'General'}</span>
+                            <span>${timeAgo}</span>
+                        </div>
+                        <h3 class="card-title">${a.title}</h3>
+                        ${renderCardFooter(a)}
+                    </div>
+                </a>
+            `;
+        }
+
+        async function loadNews(append = false, silent = false) {
+            try {
+                let limit = currentSettings.article_limit || 20;
+                let url = `/news?page=${currentPage}&limit=${limit}`;
+                if (currentCategory) url += `&category=${currentCategory}`;
+                if (currentSearch) url += `&search=${encodeURIComponent(currentSearch)}`;
+
+                const res = await fetch(url, { cache: 'no-store' });
+                if (!res.ok) throw new Error("HTTP error");
+                const json = await res.json();
+                
+                if (!append) renderedUrls.clear();
+
+                let validData = json.data.filter(a => {
+                    if (renderedUrls.has(a.url)) return false;
+                    renderedUrls.add(a.url);
+                    return true;
+                });
+                
+                if (validData.length === 0 && !append) {
+                    setMainEmpty(currentSearch ? "No stories found for your search." : "No live news available in this category right now.");
+                    return;
+                }
+                
+                const showImg = currentSettings.show_images !== false;
+                const mainCont = document.getElementById('mainContainer');
+                
+                let categoryDisplayTitle = currentSearch ? `Search: "${currentSearch}"` : (currentCategory ? currentCategory.toUpperCase() : 'ALL NEWS');
+                
+                const useEditorialLayout = !currentSearch;
+
+                if (!append) {
+                    if (useEditorialLayout && validData.length > 0) {
+                        let mainStory = validData.shift();
+                        let secondaryStories = validData.splice(0, 5);
+                        
+                        let html = `
+                            <div class="category-layout">
+                                <div class="main-story-col" id="mainStoryCol">
+                                    ${renderFeaturedArticle(mainStory, showImg)}
+                                </div>
+                                <div class="secondary-stories-col" id="secondaryStoryCol">
+                                    ${secondaryStories.map(a => renderSecondaryArticle(a, showImg)).join('')}
+                                </div>
+                            </div>
+                            <div class="section-title" style="margin-top: 40px; display: ${validData.length > 0 ? 'block' : 'none'};" id="moreStoriesTitle">MORE STORIES</div>
+                            <div class="article-grid" id="gridContainer">
+                                ${validData.map(a => renderArticleCard(a, showImg)).join('')}
+                            </div>
+                        `;
+                        mainCont.innerHTML = html;
+                    } else {
+                        mainCont.innerHTML = `<div class="section-title">${categoryDisplayTitle}</div><div class="article-grid" id="gridContainer">
+                            ${validData.map(a => renderArticleCard(a, showImg)).join('')}
+                        </div>`;
+                    }
+                } else {
+                    const gridCont = document.getElementById('gridContainer');
+                    let newCards = validData.map(a => renderArticleCard(a, showImg)).join('');
+                    if (gridCont) {
+                        gridCont.insertAdjacentHTML('beforeend', newCards);
+                    }
+                    if (useEditorialLayout && document.getElementById('moreStoriesTitle') && validData.length > 0) {
+                        document.getElementById('moreStoriesTitle').style.display = 'block';
+                    }
+                }
+                
+                if (json.meta && json.meta.has_more) {
+                    if (!document.getElementById('loadMoreContainer')) {
+                        mainCont.insertAdjacentHTML('beforeend', `<div class="load-more-container" id="loadMoreContainer"><button id="loadMoreBtn" class="load-more-btn" onclick="loadMore()">Load More</button></div>`);
+                    } else {
+                        document.getElementById('loadMoreContainer').style.display = 'block';
+                    }
+                    if (document.getElementById('loadMoreBtn')) {
+                        document.getElementById('loadMoreBtn').innerText = 'Load More';
+                        document.getElementById('loadMoreBtn').disabled = false;
+                    }
+                } else if (document.getElementById('loadMoreContainer')) {
+                    document.getElementById('loadMoreContainer').style.display = 'none';
+                }
+            } catch (e) { 
+                if (!silent) setMainError("Unable to load live news right now."); 
+            }
+        }
+
+        function loadMore() { 
+            let btn = document.getElementById('loadMoreBtn');
+            if(btn) { btn.innerText = 'Loading...'; btn.disabled = true; }
+            currentPage++; 
+            loadNews(true); 
+        }
+
+        // --- Seamless Reload Helper (Preserves active category & user state) ---
+        async function reloadCurrentView(silent = true) {
+            if (currentView === 'briefing') {
+                await loadBriefing(silent);
+            } else if (currentView === 'breaking') {
+                await loadBreaking(silent);
+            } else {
+                await loadNews(false, silent);
+            }
+        }
+
+        // --- Intelligent Freshness & Auto-Refresh System ---
+        async function checkFreshnessAndAutoRefresh() {
+            const pill = document.getElementById('refreshStatusPill');
+            const pillText = document.getElementById('refreshStatusText');
+            
+            try {
+                const res = await fetch('/refresh-status', { cache: 'no-store' });
+                if (!res.ok) throw new Error("Status check failed");
+                const data = await res.json();
+                
+                if (data.status === 'refresh_in_progress') {
+                    pill.classList.add('updating');
+                    pillText.textContent = "Updating latest news...";
+                    pollRefreshStatus();
+                    return;
+                }
+                
+                if (data.is_fresh && data.last_successful_refresh) {
+                    const relative = formatRelativeTime(data.last_successful_refresh);
+                    pill.classList.remove('updating', 'error');
+                    pillText.textContent = relative ? `Updated ${relative}` : "Updated just now";
+                } else {
+                    // Data is stale or never refreshed: trigger non-forced background refresh
+                    triggerRefresh(false);
+                }
+            } catch (e) {
+                pill.classList.remove('updating');
+                pillText.textContent = "Showing cached news";
+            }
+        }
+
+        async function triggerRefresh(force = false) {
+            if (isRefreshing) return;
+            isRefreshing = true;
+            
+            const pill = document.getElementById('refreshStatusPill');
+            const pillText = document.getElementById('refreshStatusText');
+            const refreshIcon = document.getElementById('refreshIcon');
+            const refreshBtn = document.getElementById('manualRefreshBtn');
+            
+            refreshIcon.classList.add('spinning');
+            refreshBtn.disabled = true;
+            pill.classList.remove('error');
+            pill.classList.add('updating');
+            pillText.textContent = force ? "Refreshing latest news..." : "Updating news...";
+            
+            if (force) {
+                showToast("Refreshing latest news from all sources...");
+            }
+            
+            try {
+                const url = '/refresh-news' + (force ? '?force=true' : '');
+                const res = await fetch(url, { method: 'POST', cache: 'no-store' });
+                const json = await res.json();
+                
+                if (json.status === 'success') {
+                    const newArticles = json.meta?.new_articles || 0;
+                    const updatedArticles = json.meta?.updated || 0;
+                    
+                    pill.classList.remove('updating', 'error');
+                    pillText.textContent = newArticles > 0 ? `Updated just now (${newArticles} new stories)` : "Updated just now";
+                    
+                    if (newArticles > 0 || updatedArticles > 0 || force) {
+                        currentPage = 1;
+                        await reloadCurrentView(true);
+                    }
+                    
+                    if (force) {
+                        showToast(newArticles > 0 ? `Refreshed: ${newArticles} new stories added!` : "News is already up to date.");
+                    }
+                } else if (json.status === 'fresh') {
+                    pill.classList.remove('updating', 'error');
+                    pillText.textContent = "Updated just now";
+                    if (force) showToast("News is already up to date.");
+                } else if (json.status === 'refresh_in_progress') {
+                    pillText.textContent = "Refresh in progress...";
+                    pollRefreshStatus();
+                } else {
+                    pill.classList.remove('updating');
+                    pill.classList.add('error');
+                    pillText.textContent = "Showing cached news";
+                    if (force) showToast("Could not complete full refresh. Showing cached news.");
+                }
+            } catch (e) {
+                pill.classList.remove('updating');
+                pill.classList.add('error');
+                pillText.textContent = "Showing cached news";
+                if (force) showToast("Failed to connect to refresh service.");
+            } finally {
+                refreshIcon.classList.remove('spinning');
+                refreshBtn.disabled = false;
+                isRefreshing = false;
+            }
+        }
+
+        function pollRefreshStatus() {
+            const interval = setInterval(async () => {
+                try {
+                    const res = await fetch('/refresh-status', { cache: 'no-store' });
+                    const data = await res.json();
+                    if (data.status !== 'refresh_in_progress') {
+                        clearInterval(interval);
+                        document.getElementById('refreshStatusPill').classList.remove('updating');
+                        document.getElementById('refreshStatusText').textContent = "Updated just now";
+                        reloadCurrentView(true);
+                    }
+                } catch(e) {
+                    clearInterval(interval);
+                }
+            }, 3000);
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            try {
+                const res = await fetch('/chat', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({message: text}),
+                    cache: 'no-store'
+                });
+                const json = await res.json();
+                const msgEl = document.getElementById('agentMsg');
+                msgEl.textContent = json.text;
+                msgEl.classList.add('show');
+                setTimeout(() => msgEl.classList.remove('show'), 8000);
+            } catch (e) { showToast("Failed to connect to Agent."); }
+        }
+    </script>
 </body>
 </html>

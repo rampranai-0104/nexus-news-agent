@@ -1,0 +1,35 @@
+{
+  "ai_provider": "groq",
+  "default_location": {
+    "city": "Vijayawada",
+    "state": "Andhra Pradesh",
+    "country": "India"
+  },
+  "preferred_categories": [
+    "local",
+    "national",
+    "global",
+    "sports",
+    "technology",
+    "business"
+  ],
+  "max_articles_per_category": 5,
+  "source_reliability": {
+    "high": [
+      "Reuters",
+      "BBC",
+      "The Hindu",
+      "NDTV",
+      "Indian Express",
+      "Economic Times"
+    ],
+    "medium": [
+      "Times of India",
+      "Hindustan Times",
+      "TechCrunch",
+      "News Minute"
+    ],
+    "low": []
+  },
+  "first_run_complete": false
+}

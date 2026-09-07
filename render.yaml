@@ -2,14 +2,18 @@ services:
   - type: web
     name: nexus-news-api
     env: python
-    buildCommand: pip install -r requirements.txt && python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab'); nltk.download('stopwords')"
+    buildCommand: pip install -r requirements.txt
     startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: NEWSAPI_KEY
         sync: false
+      - key: GNEWS_API_KEY
+        sync: false
       - key: GROQ_API_KEY
         sync: false
-      - key: HUGGINGFACE_TOKEN
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: IPINFO_TOKEN
         sync: false
       - key: DATABASE_URL
         fromDatabase:

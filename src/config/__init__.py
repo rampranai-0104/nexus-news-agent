@@ -2,14 +2,18 @@ import os
 import json
 from dotenv import load_dotenv
 
-# Load environment variables from .env
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# Base Directory: root of the project
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if not os.path.exists(os.path.join(BASE_DIR, '.env')):
+    # Fallback to parent directory
+    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Paths
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 LOG_PATH = os.path.join(BASE_DIR, 'logs', 'app.log')
-CONFIG_JSON_PATH = os.path.join(os.path.dirname(__file__), 'config.json')
+CONFIG_JSON_PATH = os.path.join(os.path.dirname(__file__), '..', 'config.json')
 
 # API Keys
 NEWSAPI_KEY = os.getenv("NEWSAPI_KEY")
@@ -36,7 +40,6 @@ def get_config():
     except Exception as e:
         print(f"Error loading config.json: {e}")
     
-    # Return default config if loading fails
     return {
         "ai_provider": "groq",
         "default_location": {
@@ -69,3 +72,16 @@ def update_config(key, value):
 def get_db_url():
     """Get PostgreSQL URL if available, else None."""
     return DATABASE_URL
+
+from config.settings_schema import (
+    SETTINGS_SCHEMA,
+    CANONICAL_SETTINGS,
+    CANONICAL_DEFAULTS,
+    SETTINGS_VERSION,
+    get_canonical_defaults,
+    validate_setting,
+    validate_settings,
+    validate_all_settings,
+    validate_settings_payload,
+    is_in_quiet_hours
+)
