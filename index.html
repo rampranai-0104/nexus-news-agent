@@ -3,7 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus News Agent</title>
+    <title>Nexus News Agent — Live News &amp; AI Synthesis</title>
+    <meta name="description" content="Nexus News Agent delivers live news and AI-assisted news synthesis across local, national, global, technology, business, and sports categories with breaking news alerts and daily morning briefings.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://nexus-news-agent.vercel.app/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nexus-news-agent.vercel.app/">
+    <meta property="og:title" content="Nexus News Agent — Live News &amp; AI Synthesis">
+    <meta property="og:description" content="Live news aggregation and AI-assisted synthesis platform providing local, national, global, technology, business, and sports coverage with breaking alerts and morning briefings.">
+    <meta property="og:site_name" content="Nexus News Agent">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:url" content="https://nexus-news-agent.vercel.app/">
+    <meta name="twitter:title" content="Nexus News Agent — Live News &amp; AI Synthesis">
+    <meta name="twitter:description" content="Live news aggregation and AI-assisted synthesis platform providing local, national, global, technology, business, and sports coverage with breaking alerts and morning briefings.">
+
+    <!-- Schema.org Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://nexus-news-agent.vercel.app/#website",
+          "url": "https://nexus-news-agent.vercel.app/",
+          "name": "Nexus News Agent",
+          "description": "Live news aggregation and AI-assisted synthesis platform organizing current news across Local, National, Global, Technology, Business, and Sports categories.",
+          "publisher": {
+            "@id": "https://nexus-news-agent.vercel.app/#organization"
+          },
+          "inLanguage": "en-US"
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://nexus-news-agent.vercel.app/#organization",
+          "name": "Nexus News Agent",
+          "url": "https://nexus-news-agent.vercel.app/",
+          "description": "AI-powered news platform delivering synthesized, multi-category news intelligence."
+        }
+      ]
+    }
+    </script>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -195,8 +238,52 @@
         .header-left { display: flex; align-items: center; gap: 16px; color: var(--text-secondary); font-size: var(--fs-small); font-weight: 500; }
         .header-left .material-symbols-outlined { cursor: pointer; transition: var(--transition); }
         .header-left .material-symbols-outlined:hover { color: var(--text-primary); }
-        .logo { font-family: var(--font-headline); font-size: 32px; font-weight: 700; letter-spacing: -0.5px; cursor: pointer; }
+        .logo { font-family: var(--font-headline); font-size: 32px; font-weight: 700; letter-spacing: -0.5px; cursor: pointer; margin: 0; line-height: 1; }
         .header-right { display: flex; align-items: center; gap: 16px; }
+
+        /* Site Footer */
+        .site-footer {
+            border-top: 1px solid var(--border);
+            padding: 48px 40px 120px;
+            margin-top: 60px;
+            background: var(--surface);
+            color: var(--text-secondary);
+            font-size: var(--fs-small);
+        }
+        .site-footer-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+        .site-footer-brand {
+            max-width: 620px;
+        }
+        .site-footer-title {
+            font-family: var(--font-headline);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .site-footer-desc {
+            line-height: 1.6;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+        .site-footer-meta {
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            align-self: flex-end;
+        }
+        body.theme-light .site-footer {
+            background: #f8fafc;
+            border-top-color: #e2e8f0;
+        }
 
         /* Refresh Status Pill in Header */
         .refresh-pill {
@@ -783,6 +870,9 @@
             .fallback-summary-text { -webkit-line-clamp: 3; }
             /* Char count can be smaller on mobile */
             .ai-char-count { font-size: 9px; }
+            .site-footer { padding: 32px 20px 120px; margin-top: 40px; }
+            .site-footer-inner { flex-direction: column; gap: 16px; }
+            .site-footer-meta { align-self: flex-start; }
         }
 
         @media (max-width: 480px) {
@@ -1052,7 +1142,7 @@
                 <span id="refreshStatusText">Checking news...</span>
             </div>
         </div>
-        <div class="logo" onclick="filterCategory('', null, false)">Nexus Daily</div>
+        <h1 class="logo" onclick="filterCategory('', null, false)" title="Nexus News Agent — Live News &amp; AI Synthesis">Nexus Daily</h1>
         <div class="header-right">
             <div class="search-box">
                 <span class="material-symbols-outlined">search</span>
@@ -1082,6 +1172,21 @@
     <main class="container" id="mainContainer">
         <!-- Injected via JS -->
     </main>
+
+    <!-- Site Footer -->
+    <footer class="site-footer">
+        <div class="site-footer-inner">
+            <div class="site-footer-brand">
+                <div class="site-footer-title">Nexus News Agent</div>
+                <p class="site-footer-desc">
+                    Nexus News Agent is a live news aggregation and AI-assisted synthesis platform that organizes current news across Local, National, Global, Technology, Business, and Sports categories.
+                </p>
+            </div>
+            <div class="site-footer-meta">
+                <span>&copy; Nexus News Agent &middot; Live News &amp; AI Synthesis</span>
+            </div>
+        </div>
+    </footer>
 
     <!-- Chat Agent Interface -->
     <div class="chat-container">
